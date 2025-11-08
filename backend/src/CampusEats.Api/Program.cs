@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text;
 using CampusEats.Api.Data;
-using CampusEats.Api.Features.Auth;
 using CampusEats.Api.Features.Auth.Login;
 using CampusEats.Api.Features.Auth.Logout;
 using CampusEats.Api.Features.Auth.Refresh;
@@ -32,7 +31,7 @@ var jwtOpts = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOp
 {
     Issuer = "CampusEats",
     Audience = "CampusEatsClient",
-    SigningKey = builder.Configuration["Jwt:SigningKey"] ?? "dev_only_change_me_please",
+    SigningKey = builder.Configuration["Jwt:SigningKey"],
 };
 builder.Services.AddSingleton(jwtOpts);
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
@@ -139,7 +138,6 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/", () => Results.Ok(new { name = "CampusEats API", status = "ok" }));
 
-// TODO: Add your feature endpoint mappings here (Menu CRUD)
 CreateMenuItemEndpoint.Map(app);
 GetAllMenuItemsEndpoint.Map(app);
 GetMenuItemEndpoint.Map(app);

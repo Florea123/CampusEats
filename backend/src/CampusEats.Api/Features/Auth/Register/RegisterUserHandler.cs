@@ -3,7 +3,6 @@ using CampusEats.Api.Domain;
 using CampusEats.Api.Infrastructure.Auth;
 using CampusEats.Api.Infrastructure.Security;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace CampusEats.Api.Features.Auth.Register;
 
