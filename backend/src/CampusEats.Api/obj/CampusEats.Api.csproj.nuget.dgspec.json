@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/home/dudu/RiderProjects/CampusEats/backend/src/CampusEats.Api/CampusEats.Api.csproj": {}
+    "C:\\Users\\night\\RiderProjects\\CampusEats\\backend\\src\\CampusEats.Api\\CampusEats.Api.csproj": {}
   },
   "projects": {
-    "/home/dudu/RiderProjects/CampusEats/backend/src/CampusEats.Api/CampusEats.Api.csproj": {
+    "C:\\Users\\night\\RiderProjects\\CampusEats\\backend\\src\\CampusEats.Api\\CampusEats.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/dudu/RiderProjects/CampusEats/backend/src/CampusEats.Api/CampusEats.Api.csproj",
+        "projectUniqueName": "C:\\Users\\night\\RiderProjects\\CampusEats\\backend\\src\\CampusEats.Api\\CampusEats.Api.csproj",
         "projectName": "CampusEats.Api",
-        "projectPath": "/home/dudu/RiderProjects/CampusEats/backend/src/CampusEats.Api/CampusEats.Api.csproj",
-        "packagesPath": "/home/dudu/.nuget/packages/",
-        "outputPath": "/home/dudu/RiderProjects/CampusEats/backend/src/CampusEats.Api/obj/",
+        "projectPath": "C:\\Users\\night\\RiderProjects\\CampusEats\\backend\\src\\CampusEats.Api\\CampusEats.Api.csproj",
+        "packagesPath": "C:\\Users\\night\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\night\\RiderProjects\\CampusEats\\backend\\src\\CampusEats.Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/dudu/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\night\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -106,7 +106,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/home/dudu/.dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
