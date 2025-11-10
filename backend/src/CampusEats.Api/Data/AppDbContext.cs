@@ -8,7 +8,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
-    
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
@@ -19,4 +20,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         }
         return base.SaveChangesAsync(cancellationToken);
     }
+
+    
 }
