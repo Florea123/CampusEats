@@ -1,4 +1,3 @@
-// frontend/src/pages/LoginPage.tsx
 import { useState } from 'react'
 import { AuthApi } from '../services/api'
 

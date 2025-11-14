@@ -1,9 +1,7 @@
-// frontend/src/services/api.ts
 import type { CreateMenuItem, MenuItem, UpdateMenuItem } from '../types'
 
 const BASE_URL = 'http://localhost:5103'
 
-// In-memory token + localStorage persistence
 let accessToken: string | null = localStorage.getItem('access_token')
 
 export function setAccessToken(token: string | null) {
@@ -18,7 +16,7 @@ function authHeaders(): HeadersInit {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const res = await fetch(`${BASE_URL}${path}`, {
-        credentials: 'include', // send refresh cookie when needed
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             ...authHeaders(),
@@ -78,4 +76,12 @@ export const MenuApi = {
         request<void>(`/api/menu/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
     delete: (id: string) =>
         request<void>(`/api/menu/${id}`, { method: 'DELETE' }),
+}
+
+export const PaymentApi = {
+    createSession: (items: { menuItemId: string; quantity: number }[]) =>
+        request<{ sessionId: string; checkoutUrl: string }>(
+            '/api/payments/create-session',
+            { method: 'POST', body: JSON.stringify({ items }) }
+        ),
 }
