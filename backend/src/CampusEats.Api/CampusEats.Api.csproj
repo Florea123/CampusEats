@@ -20,13 +20,13 @@
       </PackageReference>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.10" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+      <PackageReference Include="Stripe.net" Version="49.2.0" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Features\Kitchen\" />
       <Folder Include="Features\Loyalty\" />
-      <Folder Include="Features\Payments\" />
     </ItemGroup>
 
 </Project>

@@ -11,6 +11,8 @@ using CampusEats.Api.Features.Menu.GetAllMenuItems;
 using CampusEats.Api.Features.Menu.GetMenuItem;
 using CampusEats.Api.Features.Menu.UpdateMenuItem;
 using CampusEats.Api.Features.Orders;
+using CampusEats.Api.Features.Payments.ConfirmPayment;
+using CampusEats.Api.Features.Payments.CreatePaymentSession;
 using CampusEats.Api.Infrastructure.Auth;
 using CampusEats.Api.Infrastructure.Security;
 using CampusEats.Api.Infrastructure.Validation;
@@ -22,6 +24,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = "Host=localhost;Port=5432;Database=campuseats;Username=postgres;Password=postgres";
@@ -112,7 +115,7 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
-
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 var app = builder.Build();
 
 app.UseCors(corsPolicy);
@@ -140,8 +143,6 @@ if (app.Environment.IsDevelopment())
     
 }
 
-app.MapGet("/", () => Results.Ok(new { name = "CampusEats API", status = "ok" }));
-
 CreateMenuItemEndpoint.Map(app);
 GetAllMenuItemsEndpoint.Map(app);
 GetMenuItemEndpoint.Map(app);
@@ -153,4 +154,7 @@ LoginUserEndpoint.Map(app);
 RefreshEndpoint.Map(app);
 LogoutEndpoint.Map(app);
 OrdersEndpoint.MapOrders(app);
+CreatePaymentSessionEndpoint.Map(app);
+ConfirmPaymentEndpoint.Map(app);
+
 app.Run();
