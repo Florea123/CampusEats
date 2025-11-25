@@ -12,17 +12,36 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<KitchenTask> KitchenTasks => Set<KitchenTask>();
-  
+    public DbSet<LoyaltyAccount> LoyaltyAccounts => Set<LoyaltyAccount>();
+    public DbSet<LoyaltyTransaction> LoyaltyTransactions => Set<LoyaltyTransaction>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.LoyaltyAccount)
+            .WithOne(la => la.User)
+            .HasForeignKey<LoyaltyAccount>(la => la.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
+        
         foreach (var e in ChangeTracker.Entries<User>())
         {
             if (e.State == EntityState.Modified)
                 e.Entity.UpdatedAtUtc = now;
         }
+
+        foreach (var e in ChangeTracker.Entries<LoyaltyAccount>())
+        {
+            if (e.State == EntityState.Modified)
+                e.Entity.UpdatedAtUtc = now;
+        }
+
         return base.SaveChangesAsync(cancellationToken);
     }
-
-    
 }

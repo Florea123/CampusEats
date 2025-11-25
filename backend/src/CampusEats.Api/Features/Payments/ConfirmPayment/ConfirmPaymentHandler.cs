@@ -9,12 +9,13 @@ using CampusEats.Api.Data;
 using CampusEats.Api.Domain;
 using CampusEats.Api.Enums;
 using CampusEats.Api.Features.Payments.CreatePaymentSession;
+using CampusEats.Api.Infrastructure.Loyalty;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace CampusEats.Api.Features.Payments.ConfirmPayment;
 
-public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPaymentCommand>
+public class ConfirmPaymentHandler(AppDbContext db, ILoyaltyService loyaltyService) : IRequestHandler<ConfirmPaymentCommand>
 {
     public async Task Handle(ConfirmPaymentCommand request, CancellationToken ct)
     {
@@ -24,7 +25,6 @@ public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPay
         using var doc = JsonDocument.Parse(request.PayloadJson);
         var root = doc.RootElement;
 
-        // Try to find metadata at root, otherwise look under data.object (event-wrapped)
         JsonElement metadataEl;
         if (root.TryGetProperty("metadata", out metadataEl) == false)
         {
@@ -101,5 +101,7 @@ public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPay
         payment.CompletedAtUtc = DateTime.UtcNow;
 
         await db.SaveChangesAsync(ct);
+        
+        await loyaltyService.AwardPointsForOrder(userId, order.Id, order.Total);
     }
 }
