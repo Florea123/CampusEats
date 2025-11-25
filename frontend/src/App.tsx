@@ -1,25 +1,108 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
+import { jwtDecode } from 'jwt-decode'
+import { AuthApi } from './services/api'
+import type { MenuItem } from './types'
+
+// Pagini
 import MenuPage from './pages/MenuPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import OrdersPage from './pages/OrdersPage'
+import KitchenDashboard from './pages/KitchenDashboard'
+import MenuForm from './components/MenuForm' // Folosim componenta existentă ca pagină de admin
+
+// Componente
 import OrderCart from './components/OrderCart'
-import { AuthApi } from './services/api'
-import type { MenuItem } from './types'
 import PaymentResult from './components/PaymentResult'
 import { useLoyaltyPoints } from './hooks/useLoyaltyPoints'
 
 type CartItem = { item: MenuItem; quantity: number }
 
-export default function App() {
-    const [view, setView] = useState<'login' | 'register' | 'app'>(
-        AuthApi.getToken() ? 'app' : 'login'
-    )
-    const [cart, setCart] = useState<CartItem[]>([])
-    const { points, loading: loadingPoints, refresh: refreshPoints } = useLoyaltyPoints()
+// Wrapper pentru Layout care primește props-urile necesare
+function Layout({ children, role, onLogout, cartCount }: any) {
+    const { points } = useLoyaltyPoints()
 
-    const onAuthDone = () => {
-        setView('app')
-        refreshPoints()
+    return (
+        <div style={{ fontFamily: 'system-ui, sans-serif', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <header style={{ 
+                padding: '16px 24px', 
+                borderBottom: '1px solid #eee', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 20, 
+                backgroundColor: '#fff',
+                position: 'sticky',
+                top: 0,
+                zIndex: 100
+            }}>
+                <h1 style={{ margin: 0, marginRight: 'auto', fontSize: '1.5rem' }}>
+                    <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>CampusEats 🍕</Link>
+                </h1>
+                
+                <nav style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                    <Link to="/" style={{ textDecoration: 'none', color: '#333' }}>Meniu</Link>
+                    
+                    {role && <Link to="/orders" style={{ textDecoration: 'none', color: '#333' }}>Comenzi</Link>}
+                    
+                    {(role === 'WORKER' || role === 'MANAGER') && (
+                        <Link to="/kitchen" style={{ color: '#d32f2f', fontWeight: 'bold', textDecoration: 'none' }}>Bucătărie</Link>
+                    )}
+                    
+                    {(role === 'MANAGER') && (
+                        <Link to="/admin/menu" style={{ textDecoration: 'none', color: '#333' }}>Admin Meniu</Link>
+                    )}
+                </nav>
+
+                {role && (
+                    <div style={{ background: '#f0f0f0', padding: '6px 12px', borderRadius: 20, fontSize: '0.9rem' }}>
+                        🎁 {points ?? 0} pct
+                    </div>
+                )}
+                
+                {role ? (
+                    <button onClick={onLogout} style={{ padding: '6px 12px', cursor: 'pointer' }}>Logout</button>
+                ) : (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                        <Link to="/login"><button style={{ cursor: 'pointer' }}>Login</button></Link>
+                        <Link to="/register"><button style={{ cursor: 'pointer' }}>Register</button></Link>
+                    </div>
+                )}
+            </header>
+            
+            <main style={{ flex: 1, backgroundColor: '#fafafa' }}>
+                {children}
+            </main>
+        </div>
+    )
+}
+
+export default function App() {
+    const [token, setToken] = useState<string | null>(AuthApi.getToken())
+    const [role, setRole] = useState<string | null>(null)
+    const [cart, setCart] = useState<CartItem[]>([])
+
+    useEffect(() => {
+        if (token) {
+            try {
+                const decoded: any = jwtDecode(token)
+                // Backend-ul .NET pune rolul în cheia specifică sau 'role'
+                const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role;
+                setRole(userRole)
+            } catch (e) {
+                console.error("Invalid token", e)
+                setRole(null)
+            }
+        } else {
+            setRole(null)
+        }
+    }, [token])
+
+    const handleLogout = async () => {
+        await AuthApi.logout()
+        setToken(null)
+        setCart([])
+        window.location.href = '/'
     }
 
     const addToCart = (item: MenuItem) => {
@@ -46,51 +129,54 @@ export default function App() {
 
     const onPaymentSuccess = () => {
         setCart([])
-        refreshPoints()
+        alert("Plată realizată cu succes! Punctele au fost adăugate.")
+        // Refresh points logic handled by hook inside Layout re-render or explicit reload
+        window.location.href = '/orders'
     }
 
     return (
-        <div style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
-            <header style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <h1 style={{ marginRight: 'auto' }}>CampusEats</h1>
-                {view === 'app' && (
-                    <div style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#f0f0f0',
-                        borderRadius: 20,
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8
-                    }}>
-                        🎁 {loadingPoints ? '...' : points ?? 0} points
-                    </div>
-                )}
-                {view === 'app' ? (
-                    <button onClick={async () => { await AuthApi.logout(); setView('login'); setCart([]) }}>
-                        Logout
-                    </button>
-                ) : (
-                    <>
-                        <button onClick={() => setView('login')} disabled={view === 'login'}>Login</button>
-                        <button onClick={() => setView('register')} disabled={view === 'register'}>Register</button>
-                    </>
-                )}
-            </header>
+        <BrowserRouter>
+            <Layout role={role} onLogout={handleLogout} cartCount={cart.length}>
+                <Routes>
+                    <Route path="/" element={
+                        <>
+                            <div style={{ padding: 24 }}>
+                                <MenuPage onAddToCart={addToCart} />
+                            </div>
+                            {/* Coșul e vizibil doar dacă ești autentificat */}
+                            {token && (
+                                <OrderCart 
+                                    cart={cart} 
+                                    onClear={() => setCart([])} 
+                                    onUpdateQuantity={updateQuantity} 
+                                />
+                            )}
+                        </>
+                    } />
+                    
+                    <Route path="/login" element={
+                        !token ? <div style={{ display:'flex', justifyContent:'center', marginTop: 40 }}><LoginPage onLoggedIn={() => setToken(AuthApi.getToken())} /></div> : <Navigate to="/" />
+                    } />
+                    
+                    <Route path="/register" element={
+                        !token ? <div style={{ display:'flex', justifyContent:'center', marginTop: 40 }}><RegisterPage onRegistered={() => setToken(AuthApi.getToken())} /></div> : <Navigate to="/" />
+                    } />
 
-            <main style={{ marginTop: 24 }}>
-                {view === 'app' && (
-                    <>
-                        <h2>Menu</h2>
-                        <MenuPage onAddToCart={addToCart} />
-                        <OrderCart cart={cart} onClear={() => setCart([])} onUpdateQuantity={updateQuantity} />
-                    </>
-                )}
-                {view === 'login' && <LoginPage onLoggedIn={onAuthDone} />}
-                {view === 'register' && <RegisterPage onRegistered={onAuthDone} />}
-            </main>
-
-            <PaymentResult onSuccess={onPaymentSuccess} />
-        </div>
+                    <Route path="/orders" element={
+                        token ? <OrdersPage /> : <Navigate to="/login" />
+                    } />
+                    
+                    <Route path="/kitchen" element={
+                        (role === 'WORKER' || role === 'MANAGER') ? <KitchenDashboard /> : <Navigate to="/" />
+                    } />
+                    
+                    <Route path="/admin/menu" element={
+                        (role === 'MANAGER') ? <div style={{ display:'flex', justifyContent:'center', marginTop: 40 }}><MenuForm /></div> : <Navigate to="/" />
+                    } />
+                </Routes>
+                
+                <PaymentResult onSuccess={onPaymentSuccess} />
+            </Layout>
+        </BrowserRouter>
     )
 }

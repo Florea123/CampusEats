@@ -1,4 +1,4 @@
-import type { CreateMenuItem, MenuItem, UpdateMenuItem } from '../types'
+import type { CreateMenuItem, MenuItem, UpdateMenuItem, OrderDto, KitchenTaskDto, LoyaltyAccount } from '../types'
 
 const BASE_URL = 'http://localhost:5103'
 
@@ -86,13 +86,23 @@ export const PaymentApi = {
         ),
 }
 
-export type LoyaltyAccount = {
-    id: string
-    userId: string
-    points: number
-    updatedAtUtc: string
-}
-
 export const LoyaltyApi = {
     getAccount: () => request<LoyaltyAccount>('/api/loyalty/account'),
+}
+
+export const OrderApi = {
+    getAll: (all: boolean = false) => request<OrderDto[]>(`/api/orders?all=${all}`),
+    getById: (id: string) => request<OrderDto>(`/api/orders/${id}`),
+    cancel: (id: string) => request<void>(`/api/orders/${id}/cancel`, { method: 'POST' }),
+}
+
+export const KitchenApi = {
+    getAll: () => request<KitchenTaskDto[]>('/api/kitchen/tasks'),
+    getByStatus: (status: string) => request<KitchenTaskDto[]>(`/api/kitchen/tasks/${status}`),
+    updateStatus: (id: string, status: string) => 
+        request(`/api/kitchen/tasks/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ id, status })
+        }),
+    delete: (id: string) => request(`/api/kitchen/tasks/${id}`, { method: 'DELETE' })
 }

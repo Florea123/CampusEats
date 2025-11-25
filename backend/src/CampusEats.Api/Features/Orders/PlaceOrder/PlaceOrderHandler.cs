@@ -76,6 +76,18 @@ public class PlaceOrderHandler : IRequestHandler<PlaceOrderCommand, Guid>
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
         _db.Orders.Add(order);
         await _db.SaveChangesAsync(ct);
+
+        var kitchenTask = new KitchenTask()
+        {
+            Id = Guid.NewGuid(),
+            OrderId = order.Id,
+            Status = KitchenTaskStatus.Preparing,
+            UpdatedAt = DateTime.UtcNow,
+            AssignedTo = userId,
+            Notes = order.Notes?.Trim()
+        };
+        _db.KitchenTasks.Add(kitchenTask);
+        await _db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
 
         return order.Id;
