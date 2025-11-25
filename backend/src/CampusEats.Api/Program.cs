@@ -30,6 +30,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Stripe;
+using CampusEats.Api.Features.Loyalty.GetLoyaltyAccount;
+using CampusEats.Api.Features.Loyalty.GetLoyaltyTransactions;
+using CampusEats.Api.Features.Loyalty.RedeemPoints;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = "Host=localhost;Port=5432;Database=campuseats;Username=postgres;Password=postgres";
@@ -121,6 +124,8 @@ builder.Services.AddCors(options =>
     });
 });
 StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+builder.Services.AddScoped<CampusEats.Api.Infrastructure.Loyalty.ILoyaltyService, CampusEats.Api.Infrastructure.Loyalty.LoyaltyService>();
+
 var app = builder.Build();
 
 app.UseCors(corsPolicy);
@@ -167,5 +172,9 @@ GetAllKitchenTasksEndpoint.Map(app);
 DeleteKitchenTaskEndpoint.Map(app);
 GetKitchenTasksByStatusEndpoint.Map(app);
 UpdateKitchenTaskEndpoint.Map(app);
+
+GetLoyaltyAccountEndpoint.Map(app);
+GetLoyaltyTransactionsEndpoint.Map(app);
+RedeemPointsEndpoint.Map(app);
 
 app.Run();

@@ -5,19 +5,22 @@ import RegisterPage from './pages/RegisterPage'
 import OrderCart from './components/OrderCart'
 import { AuthApi } from './services/api'
 import type { MenuItem } from './types'
-import PaymentResult from './components/PaymentResult';
+import PaymentResult from './components/PaymentResult'
+import { useLoyaltyPoints } from './hooks/useLoyaltyPoints'
 
 type CartItem = { item: MenuItem; quantity: number }
-
-
 
 export default function App() {
     const [view, setView] = useState<'login' | 'register' | 'app'>(
         AuthApi.getToken() ? 'app' : 'login'
     )
     const [cart, setCart] = useState<CartItem[]>([])
+    const { points, loading: loadingPoints, refresh: refreshPoints } = useLoyaltyPoints()
 
-    const onAuthDone = () => setView('app')
+    const onAuthDone = () => {
+        setView('app')
+        refreshPoints()
+    }
 
     const addToCart = (item: MenuItem) => {
         setCart(prev => {
@@ -41,10 +44,28 @@ export default function App() {
         }
     }
 
+    const onPaymentSuccess = () => {
+        setCart([])
+        refreshPoints()
+    }
+
     return (
         <div style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
             <header style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                 <h1 style={{ marginRight: 'auto' }}>CampusEats</h1>
+                {view === 'app' && (
+                    <div style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#f0f0f0',
+                        borderRadius: 20,
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8
+                    }}>
+                        🎁 {loadingPoints ? '...' : points ?? 0} points
+                    </div>
+                )}
                 {view === 'app' ? (
                     <button onClick={async () => { await AuthApi.logout(); setView('login'); setCart([]) }}>
                         Logout
@@ -69,9 +90,7 @@ export default function App() {
                 {view === 'register' && <RegisterPage onRegistered={onAuthDone} />}
             </main>
 
-            {/* Render modal at root so it can read redirect query params.
-                Clear cart on successful payment by passing onSuccess. */}
-            <PaymentResult onSuccess={() => setCart([])} />
+            <PaymentResult onSuccess={onPaymentSuccess} />
         </div>
     )
 }

@@ -85,3 +85,14 @@ export const PaymentApi = {
             { method: 'POST', body: JSON.stringify({ items }) }
         ),
 }
+
+export type LoyaltyAccount = {
+    id: string
+    userId: string
+    points: number
+    updatedAtUtc: string
+}
+
+export const LoyaltyApi = {
+    getAccount: () => request<LoyaltyAccount>('/api/loyalty/account'),
+}

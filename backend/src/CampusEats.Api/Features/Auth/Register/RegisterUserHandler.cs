@@ -25,7 +25,15 @@ public class RegisterUserHandler(
         user.PasswordHash = passwords.Hash(user, request.Password);
 
         db.Users.Add(user);
+        
+        var loyaltyAccount = new LoyaltyAccount
+        {
+            UserId = user.Id,
+            Points = 0
+        };
 
+        db.LoyaltyAccounts.Add(loyaltyAccount);
+        
         var (rt, rtHash, expiresAt) = jwt.GenerateRefreshToken(days: 7);
         db.RefreshTokens.Add(new RefreshToken
         {
