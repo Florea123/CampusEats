@@ -81,7 +81,7 @@ public class PlaceOrderHandler : IRequestHandler<PlaceOrderCommand, Guid>
         {
             Id = Guid.NewGuid(),
             OrderId = order.Id,
-            Status = KitchenTaskStatus.Preparing,
+            Status = KitchenTaskStatus.NotStarted,
             UpdatedAt = DateTime.UtcNow,
             AssignedTo = userId,
             Notes = order.Notes?.Trim()

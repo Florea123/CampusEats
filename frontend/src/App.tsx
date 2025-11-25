@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import { AuthApi } from './services/api'
+import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings } from 'lucide-react'
 import type { MenuItem } from './types'
 
 // Pagini
@@ -10,67 +11,92 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import OrdersPage from './pages/OrdersPage'
 import KitchenDashboard from './pages/KitchenDashboard'
-import MenuForm from './components/MenuForm' // Folosim componenta existentă ca pagină de admin
-
-// Componente
+import MenuForm from './components/MenuForm'
 import OrderCart from './components/OrderCart'
 import PaymentResult from './components/PaymentResult'
 import { useLoyaltyPoints } from './hooks/useLoyaltyPoints'
 
 type CartItem = { item: MenuItem; quantity: number }
 
-// Wrapper pentru Layout care primește props-urile necesare
-function Layout({ children, role, onLogout, cartCount }: any) {
+// Componenta ajutătoare pentru link-uri de navigare
+function NavLink({ to, icon: Icon, children, active }: any) {
+    return (
+        <Link 
+            to={to} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all font-medium text-sm
+            ${active ? 'bg-brand-100 text-brand-700 shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+        >
+            <Icon size={18} />
+            {children}
+        </Link>
+    )
+}
+
+function Layout({ children, role, onLogout }: any) {
     const { points } = useLoyaltyPoints()
+    const location = useLocation()
 
     return (
-        <div style={{ fontFamily: 'system-ui, sans-serif', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <header style={{ 
-                padding: '16px 24px', 
-                borderBottom: '1px solid #eee', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 20, 
-                backgroundColor: '#fff',
-                position: 'sticky',
-                top: 0,
-                zIndex: 100
-            }}>
-                <h1 style={{ margin: 0, marginRight: 'auto', fontSize: '1.5rem' }}>
-                    <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>CampusEats 🍕</Link>
-                </h1>
-                
-                <nav style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                    <Link to="/" style={{ textDecoration: 'none', color: '#333' }}>Meniu</Link>
-                    
-                    {role && <Link to="/orders" style={{ textDecoration: 'none', color: '#333' }}>Comenzi</Link>}
-                    
-                    {(role === 'WORKER' || role === 'MANAGER') && (
-                        <Link to="/kitchen" style={{ color: '#d32f2f', fontWeight: 'bold', textDecoration: 'none' }}>Bucătărie</Link>
-                    )}
-                    
-                    {(role === 'MANAGER') && (
-                        <Link to="/admin/menu" style={{ textDecoration: 'none', color: '#333' }}>Admin Meniu</Link>
-                    )}
-                </nav>
+        <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
+            <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between h-16 items-center">
+                        {/* Logo */}
+                        <div className="flex items-center gap-2">
+                            <div className="bg-brand-500 p-2 rounded-lg text-white">
+                                <Pizza size={24} />
+                            </div>
+                            <Link to="/" className="text-xl font-bold bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+                                CampusEats
+                            </Link>
+                        </div>
+                        
+                        {/* Navigare Desktop */}
+                        <nav className="hidden md:flex gap-2">
+                            <NavLink to="/" icon={ShoppingBag} active={location.pathname === '/'}>Meniu</NavLink>
+                            
+                            {role && (
+                                <NavLink to="/orders" icon={ClipboardList} active={location.pathname === '/orders'}>Comenzi</NavLink>
+                            )}
+                            
+                            {(role === 'WORKER' || role === 'MANAGER') && (
+                                <NavLink to="/kitchen" icon={ChefHat} active={location.pathname === '/kitchen'}>Bucătărie</NavLink>
+                            )}
+                            
+                            {(role === 'MANAGER') && (
+                                <NavLink to="/admin/menu" icon={Settings} active={location.pathname === '/admin/menu'}>Admin</NavLink>
+                            )}
+                        </nav>
 
-                {role && (
-                    <div style={{ background: '#f0f0f0', padding: '6px 12px', borderRadius: 20, fontSize: '0.9rem' }}>
-                        🎁 {points ?? 0} pct
+                        {/* Zona Utilizator / Login */}
+                        <div className="flex items-center gap-4">
+                            {role ? (
+                                <>
+                                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-amber-700 text-sm font-semibold shadow-sm">
+                                        <span>🎁 {points ?? 0} pct</span>
+                                    </div>
+                                    <button 
+                                        onClick={onLogout} 
+                                        className="flex items-center gap-2 text-gray-500 hover:text-red-600 transition-colors text-sm font-medium border border-gray-200 hover:border-red-200 rounded-full px-4 py-1.5 bg-white"
+                                    >
+                                        <LogOut size={16} />
+                                        <span className="hidden sm:inline">Logout</span>
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="flex gap-3">
+                                    <Link to="/login" className="text-gray-600 hover:text-brand-600 font-medium text-sm px-3 py-2">Login</Link>
+                                    <Link to="/register" className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-full text-sm font-medium shadow-md shadow-brand-500/30 transition-all hover:scale-105">
+                                        Sign Up
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                )}
-                
-                {role ? (
-                    <button onClick={onLogout} style={{ padding: '6px 12px', cursor: 'pointer' }}>Logout</button>
-                ) : (
-                    <div style={{ display: 'flex', gap: 8 }}>
-                        <Link to="/login"><button style={{ cursor: 'pointer' }}>Login</button></Link>
-                        <Link to="/register"><button style={{ cursor: 'pointer' }}>Register</button></Link>
-                    </div>
-                )}
+                </div>
             </header>
             
-            <main style={{ flex: 1, backgroundColor: '#fafafa' }}>
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {children}
             </main>
         </div>
@@ -86,11 +112,9 @@ export default function App() {
         if (token) {
             try {
                 const decoded: any = jwtDecode(token)
-                // Backend-ul .NET pune rolul în cheia specifică sau 'role'
                 const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role;
                 setRole(userRole)
             } catch (e) {
-                console.error("Invalid token", e)
                 setRole(null)
             }
         } else {
@@ -129,21 +153,21 @@ export default function App() {
 
     const onPaymentSuccess = () => {
         setCart([])
-        alert("Plată realizată cu succes! Punctele au fost adăugate.")
-        // Refresh points logic handled by hook inside Layout re-render or explicit reload
+        alert("Plată realizată cu succes!")
         window.location.href = '/orders'
     }
 
     return (
         <BrowserRouter>
-            <Layout role={role} onLogout={handleLogout} cartCount={cart.length}>
+            <Layout role={role} onLogout={handleLogout}>
                 <Routes>
                     <Route path="/" element={
                         <>
-                            <div style={{ padding: 24 }}>
-                                <MenuPage onAddToCart={addToCart} />
+                            <div className="mb-8 text-center md:text-left animate-fade-in">
+                                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Meniu Delicios 🍔</h1>
+                                <p className="text-gray-500 mt-2 text-lg">Comandă mâncarea preferată direct din campus.</p>
                             </div>
-                            {/* Coșul e vizibil doar dacă ești autentificat */}
+                            <MenuPage onAddToCart={addToCart} />
                             {token && (
                                 <OrderCart 
                                     cart={cart} 
@@ -154,27 +178,12 @@ export default function App() {
                         </>
                     } />
                     
-                    <Route path="/login" element={
-                        !token ? <div style={{ display:'flex', justifyContent:'center', marginTop: 40 }}><LoginPage onLoggedIn={() => setToken(AuthApi.getToken())} /></div> : <Navigate to="/" />
-                    } />
-                    
-                    <Route path="/register" element={
-                        !token ? <div style={{ display:'flex', justifyContent:'center', marginTop: 40 }}><RegisterPage onRegistered={() => setToken(AuthApi.getToken())} /></div> : <Navigate to="/" />
-                    } />
-
-                    <Route path="/orders" element={
-                        token ? <OrdersPage /> : <Navigate to="/login" />
-                    } />
-                    
-                    <Route path="/kitchen" element={
-                        (role === 'WORKER' || role === 'MANAGER') ? <KitchenDashboard /> : <Navigate to="/" />
-                    } />
-                    
-                    <Route path="/admin/menu" element={
-                        (role === 'MANAGER') ? <div style={{ display:'flex', justifyContent:'center', marginTop: 40 }}><MenuForm /></div> : <Navigate to="/" />
-                    } />
+                    <Route path="/login" element={!token ? <LoginPage onLoggedIn={() => setToken(AuthApi.getToken())} /> : <Navigate to="/" />} />
+                    <Route path="/register" element={!token ? <RegisterPage onRegistered={() => setToken(AuthApi.getToken())} /> : <Navigate to="/" />} />
+                    <Route path="/orders" element={token ? <OrdersPage /> : <Navigate to="/login" />} />
+                    <Route path="/kitchen" element={(role === 'WORKER' || role === 'MANAGER') ? <KitchenDashboard /> : <Navigate to="/" />} />
+                    <Route path="/admin/menu" element={(role === 'MANAGER') ? <MenuForm /> : <Navigate to="/" />} />
                 </Routes>
-                
                 <PaymentResult onSuccess={onPaymentSuccess} />
             </Layout>
         </BrowserRouter>

@@ -94,6 +94,11 @@ export const OrderApi = {
     getAll: (all: boolean = false) => request<OrderDto[]>(`/api/orders?all=${all}`),
     getById: (id: string) => request<OrderDto>(`/api/orders/${id}`),
     cancel: (id: string) => request<void>(`/api/orders/${id}/cancel`, { method: 'POST' }),
+    create: (items: Array<{ menuItemId: string; quantity: number }>, notes?: string) => 
+        request<{ orderId: string }>('/api/orders', {
+            method: 'POST',
+            body: JSON.stringify({ items, notes })
+        })
 }
 
 export const KitchenApi = {
