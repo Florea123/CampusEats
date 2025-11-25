@@ -74,3 +74,21 @@ export type LoyaltyAccount = {
     points: number
     updatedAtUtc: string
 }
+
+// --- Adăugiri pentru Loyalty ---
+
+export enum LoyaltyTransactionType {
+    Earned = 0,
+    Redeemed = 1,
+    Expired = 2,
+    Adjusted = 3
+}
+
+export type LoyaltyTransactionDto = {
+    id: string
+    pointsChange: number
+    type: LoyaltyTransactionType
+    description: string
+    relatedOrderId: string | null
+    createdAtUtc: string
+}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import { AuthApi } from './services/api'
-import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings } from 'lucide-react'
+import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings, Gift } from 'lucide-react'
 import type { MenuItem } from './types'
 
 // Pagini
@@ -14,6 +14,7 @@ import KitchenDashboard from './pages/KitchenDashboard'
 import MenuForm from './components/MenuForm'
 import OrderCart from './components/OrderCart'
 import PaymentResult from './components/PaymentResult'
+import LoyaltyPage from './pages/LoyaltyPage' // Import pagina nouă
 import { useLoyaltyPoints } from './hooks/useLoyaltyPoints'
 
 type CartItem = { item: MenuItem; quantity: number }
@@ -71,18 +72,23 @@ function Layout({ children, role, onLogout }: any) {
                         {/* Zona Utilizator / Login */}
                         <div className="flex items-center gap-4">
                             {role ? (
-                                <>
-                                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-amber-700 text-sm font-semibold shadow-sm">
-                                        <span>🎁 {points ?? 0} pct</span>
-                                    </div>
+                                <div className="flex items-center gap-3">
+                                    {/* Link Puncte Loialitate */}
+                                    <Link to="/loyalty" className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-full text-amber-700 text-sm font-semibold shadow-sm transition-colors cursor-pointer" title="Vezi Detalii Puncte">
+                                        <Gift size={14} />
+                                        <span>{points ?? 0} pct</span>
+                                    </Link>
+
+                                    <div className="h-6 w-px bg-gray-300 mx-1"></div>
+
                                     <button 
                                         onClick={onLogout} 
-                                        className="flex items-center gap-2 text-gray-500 hover:text-red-600 transition-colors text-sm font-medium border border-gray-200 hover:border-red-200 rounded-full px-4 py-1.5 bg-white"
+                                        className="flex items-center gap-2 text-gray-500 hover:text-red-600 transition-colors text-sm font-medium hover:bg-red-50 px-3 py-1.5 rounded-lg"
+                                        title="Deconectare"
                                     >
-                                        <LogOut size={16} />
-                                        <span className="hidden sm:inline">Logout</span>
+                                        <LogOut size={18} />
                                     </button>
-                                </>
+                                </div>
                             ) : (
                                 <div className="flex gap-3">
                                     <Link to="/login" className="text-gray-600 hover:text-brand-600 font-medium text-sm px-3 py-2">Login</Link>
@@ -96,7 +102,7 @@ function Layout({ children, role, onLogout }: any) {
                 </div>
             </header>
             
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
                 {children}
             </main>
         </div>
@@ -163,7 +169,7 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={
                         <>
-                            <div className="mb-8 text-center md:text-left animate-fade-in">
+                            <div className="mb-8 text-center md:text-left">
                                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Meniu Delicios 🍔</h1>
                                 <p className="text-gray-500 mt-2 text-lg">Comandă mâncarea preferată direct din campus.</p>
                             </div>
@@ -180,7 +186,12 @@ export default function App() {
                     
                     <Route path="/login" element={!token ? <LoginPage onLoggedIn={() => setToken(AuthApi.getToken())} /> : <Navigate to="/" />} />
                     <Route path="/register" element={!token ? <RegisterPage onRegistered={() => setToken(AuthApi.getToken())} /> : <Navigate to="/" />} />
+                    
+                    {/* Rute Protejate Utilizator */}
+                    <Route path="/loyalty" element={token ? <LoyaltyPage /> : <Navigate to="/login" />} />
                     <Route path="/orders" element={token ? <OrdersPage /> : <Navigate to="/login" />} />
+                    
+                    {/* Rute Protejate Staff */}
                     <Route path="/kitchen" element={(role === 'WORKER' || role === 'MANAGER') ? <KitchenDashboard /> : <Navigate to="/" />} />
                     <Route path="/admin/menu" element={(role === 'MANAGER') ? <MenuForm /> : <Navigate to="/" />} />
                 </Routes>

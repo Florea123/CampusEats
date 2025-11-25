@@ -1,4 +1,4 @@
-import type { CreateMenuItem, MenuItem, UpdateMenuItem, OrderDto, KitchenTaskDto, LoyaltyAccount } from '../types'
+import type { CreateMenuItem, MenuItem, UpdateMenuItem, OrderDto, KitchenTaskDto, LoyaltyAccount, LoyaltyTransactionDto } from '../types'
 
 const BASE_URL = 'http://localhost:5103'
 
@@ -88,6 +88,7 @@ export const PaymentApi = {
 
 export const LoyaltyApi = {
     getAccount: () => request<LoyaltyAccount>('/api/loyalty/account'),
+    getTransactions: () => request<LoyaltyTransactionDto[]>('/api/loyalty/transactions'),
 }
 
 export const OrderApi = {
