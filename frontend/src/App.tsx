@@ -1,25 +1,138 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
+import { jwtDecode } from 'jwt-decode'
+import { AuthApi } from './services/api'
+import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings, Gift } from 'lucide-react'
+import type { MenuItem } from './types'
+
+// Pagini
 import MenuPage from './pages/MenuPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import OrdersPage from './pages/OrdersPage'
+import KitchenDashboard from './pages/KitchenDashboard'
+import MenuForm from './components/MenuForm'
 import OrderCart from './components/OrderCart'
-import { AuthApi } from './services/api'
-import type { MenuItem } from './types'
 import PaymentResult from './components/PaymentResult'
+import LoyaltyPage from './pages/LoyaltyPage' // Import pagina nouă
 import { useLoyaltyPoints } from './hooks/useLoyaltyPoints'
 
 type CartItem = { item: MenuItem; quantity: number }
 
-export default function App() {
-    const [view, setView] = useState<'login' | 'register' | 'app'>(
-        AuthApi.getToken() ? 'app' : 'login'
+// Componenta ajutătoare pentru link-uri de navigare
+function NavLink({ to, icon: Icon, children, active }: any) {
+    return (
+        <Link 
+            to={to} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all font-medium text-sm
+            ${active ? 'bg-brand-100 text-brand-700 shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+        >
+            <Icon size={18} />
+            {children}
+        </Link>
     )
-    const [cart, setCart] = useState<CartItem[]>([])
-    const { points, loading: loadingPoints, refresh: refreshPoints } = useLoyaltyPoints()
+}
 
-    const onAuthDone = () => {
-        setView('app')
-        refreshPoints()
+function Layout({ children, role, onLogout }: any) {
+    const { points } = useLoyaltyPoints()
+    const location = useLocation()
+
+    return (
+        <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
+            <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between h-16 items-center">
+                        {/* Logo */}
+                        <div className="flex items-center gap-2">
+                            <div className="bg-brand-500 p-2 rounded-lg text-white">
+                                <Pizza size={24} />
+                            </div>
+                            <Link to="/" className="text-xl font-bold bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+                                CampusEats
+                            </Link>
+                        </div>
+                        
+                        {/* Navigare Desktop */}
+                        <nav className="hidden md:flex gap-2">
+                            <NavLink to="/" icon={ShoppingBag} active={location.pathname === '/'}>Meniu</NavLink>
+                            
+                            {role && (
+                                <NavLink to="/orders" icon={ClipboardList} active={location.pathname === '/orders'}>Comenzi</NavLink>
+                            )}
+                            
+                            {(role === 'WORKER' || role === 'MANAGER') && (
+                                <NavLink to="/kitchen" icon={ChefHat} active={location.pathname === '/kitchen'}>Bucătărie</NavLink>
+                            )}
+                            
+                            {(role === 'MANAGER') && (
+                                <NavLink to="/admin/menu" icon={Settings} active={location.pathname === '/admin/menu'}>Admin</NavLink>
+                            )}
+                        </nav>
+
+                        {/* Zona Utilizator / Login */}
+                        <div className="flex items-center gap-4">
+                            {role ? (
+                                <div className="flex items-center gap-3">
+                                    {/* Link Puncte Loialitate */}
+                                    <Link to="/loyalty" className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-full text-amber-700 text-sm font-semibold shadow-sm transition-colors cursor-pointer" title="Vezi Detalii Puncte">
+                                        <Gift size={14} />
+                                        <span>{points ?? 0} pct</span>
+                                    </Link>
+
+                                    <div className="h-6 w-px bg-gray-300 mx-1"></div>
+
+                                    <button 
+                                        onClick={onLogout} 
+                                        className="flex items-center gap-2 text-gray-500 hover:text-red-600 transition-colors text-sm font-medium hover:bg-red-50 px-3 py-1.5 rounded-lg"
+                                        title="Deconectare"
+                                    >
+                                        <LogOut size={18} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex gap-3">
+                                    <Link to="/login" className="text-gray-600 hover:text-brand-600 font-medium text-sm px-3 py-2">Login</Link>
+                                    <Link to="/register" className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-full text-sm font-medium shadow-md shadow-brand-500/30 transition-all hover:scale-105">
+                                        Sign Up
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+                {children}
+            </main>
+        </div>
+    )
+}
+
+export default function App() {
+    const [token, setToken] = useState<string | null>(AuthApi.getToken())
+    const [role, setRole] = useState<string | null>(null)
+    const [cart, setCart] = useState<CartItem[]>([])
+
+    useEffect(() => {
+        if (token) {
+            try {
+                const decoded: any = jwtDecode(token)
+                const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role;
+                setRole(userRole)
+            } catch (e) {
+                setRole(null)
+            }
+        } else {
+            setRole(null)
+        }
+    }, [token])
+
+    const handleLogout = async () => {
+        await AuthApi.logout()
+        setToken(null)
+        setCart([])
+        window.location.href = '/'
     }
 
     const addToCart = (item: MenuItem) => {
@@ -46,51 +159,44 @@ export default function App() {
 
     const onPaymentSuccess = () => {
         setCart([])
-        refreshPoints()
+        alert("Plată realizată cu succes!")
+        window.location.href = '/orders'
     }
 
     return (
-        <div style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
-            <header style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <h1 style={{ marginRight: 'auto' }}>CampusEats</h1>
-                {view === 'app' && (
-                    <div style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#f0f0f0',
-                        borderRadius: 20,
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8
-                    }}>
-                        🎁 {loadingPoints ? '...' : points ?? 0} points
-                    </div>
-                )}
-                {view === 'app' ? (
-                    <button onClick={async () => { await AuthApi.logout(); setView('login'); setCart([]) }}>
-                        Logout
-                    </button>
-                ) : (
-                    <>
-                        <button onClick={() => setView('login')} disabled={view === 'login'}>Login</button>
-                        <button onClick={() => setView('register')} disabled={view === 'register'}>Register</button>
-                    </>
-                )}
-            </header>
-
-            <main style={{ marginTop: 24 }}>
-                {view === 'app' && (
-                    <>
-                        <h2>Menu</h2>
-                        <MenuPage onAddToCart={addToCart} />
-                        <OrderCart cart={cart} onClear={() => setCart([])} onUpdateQuantity={updateQuantity} />
-                    </>
-                )}
-                {view === 'login' && <LoginPage onLoggedIn={onAuthDone} />}
-                {view === 'register' && <RegisterPage onRegistered={onAuthDone} />}
-            </main>
-
-            <PaymentResult onSuccess={onPaymentSuccess} />
-        </div>
+        <BrowserRouter>
+            <Layout role={role} onLogout={handleLogout}>
+                <Routes>
+                    <Route path="/" element={
+                        <>
+                            <div className="mb-8 text-center md:text-left">
+                                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Meniu Delicios 🍔</h1>
+                                <p className="text-gray-500 mt-2 text-lg">Comandă mâncarea preferată direct din campus.</p>
+                            </div>
+                            <MenuPage onAddToCart={addToCart} />
+                            {token && (
+                                <OrderCart 
+                                    cart={cart} 
+                                    onClear={() => setCart([])} 
+                                    onUpdateQuantity={updateQuantity} 
+                                />
+                            )}
+                        </>
+                    } />
+                    
+                    <Route path="/login" element={!token ? <LoginPage onLoggedIn={() => setToken(AuthApi.getToken())} /> : <Navigate to="/" />} />
+                    <Route path="/register" element={!token ? <RegisterPage onRegistered={() => setToken(AuthApi.getToken())} /> : <Navigate to="/" />} />
+                    
+                    {/* Rute Protejate Utilizator */}
+                    <Route path="/loyalty" element={token ? <LoyaltyPage /> : <Navigate to="/login" />} />
+                    <Route path="/orders" element={token ? <OrdersPage /> : <Navigate to="/login" />} />
+                    
+                    {/* Rute Protejate Staff */}
+                    <Route path="/kitchen" element={(role === 'WORKER' || role === 'MANAGER') ? <KitchenDashboard /> : <Navigate to="/" />} />
+                    <Route path="/admin/menu" element={(role === 'MANAGER') ? <MenuForm /> : <Navigate to="/" />} />
+                </Routes>
+                <PaymentResult onSuccess={onPaymentSuccess} />
+            </Layout>
+        </BrowserRouter>
     )
 }

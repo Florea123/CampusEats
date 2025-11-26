@@ -1,4 +1,4 @@
-import type { CreateMenuItem, MenuItem, UpdateMenuItem } from '../types'
+import type { CreateMenuItem, MenuItem, UpdateMenuItem, OrderDto, KitchenTaskDto, LoyaltyAccount, LoyaltyTransactionDto } from '../types'
 
 const BASE_URL = 'http://localhost:5103'
 
@@ -79,20 +79,37 @@ export const MenuApi = {
 }
 
 export const PaymentApi = {
-    createSession: (items: { menuItemId: string; quantity: number }[]) =>
-        request<{ sessionId: string; checkoutUrl: string }>(
-            '/api/payments/create-session',
-            { method: 'POST', body: JSON.stringify({ items }) }
-        ),
-}
-
-export type LoyaltyAccount = {
-    id: string
-    userId: string
-    points: number
-    updatedAtUtc: string
+    createSession: (items: Array<{ menuItemId: string; quantity: number }>, notes?: string) =>
+    request<{ sessionId: string; checkoutUrl: string }>('/api/payments/create-session', {
+        method: 'POST',
+        body: JSON.stringify({ items, notes })
+    })
 }
 
 export const LoyaltyApi = {
     getAccount: () => request<LoyaltyAccount>('/api/loyalty/account'),
+    getTransactions: () => request<LoyaltyTransactionDto[]>('/api/loyalty/transactions'),
+}
+
+export const OrderApi = {
+    getAll: (all: boolean = false) => request<OrderDto[]>(`/api/orders?all=${all}`),
+    getById: (id: string) => request<OrderDto>(`/api/orders/${id}`),
+    cancel: (id: string) => request<void>(`/api/orders/${id}/cancel`, { method: 'POST' }),
+    // Irelevanta asta de jos
+    // create: (items: Array<{ menuItemId: string; quantity: number }>, notes?: string) => 
+    //     request<{ orderId: string }>('/api/orders', {
+    //         method: 'POST',
+    //         body: JSON.stringify({ items, notes })
+    //     })
+}
+
+export const KitchenApi = {
+    getAll: () => request<KitchenTaskDto[]>('/api/kitchen/tasks'),
+    getByStatus: (status: string) => request<KitchenTaskDto[]>(`/api/kitchen/tasks/${status}`),
+    updateStatus: (id: string, status: string) => 
+        request(`/api/kitchen/tasks/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ id, status })
+        }),
+    delete: (id: string) => request(`/api/kitchen/tasks/${id}`, { method: 'DELETE' })
 }
