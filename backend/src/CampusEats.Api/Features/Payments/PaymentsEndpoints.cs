@@ -1,11 +1,13 @@
+using CampusEats.Api.Features.Payments.ConfirmPayment;
+using CampusEats.Api.Features.Payments.CreatePaymentSession;
 using MediatR;
 using Stripe;
 
-namespace CampusEats.Api.Features.Payments.ConfirmPayment;
+namespace CampusEats.Api.Features.Payments;
 
-public static class ConfirmPaymentEndpoint
+public static class PaymentsEndpoints
 {
-    public static void Map(WebApplication app)
+    public static void MapPayments(this IEndpointRouteBuilder app)
     {
         app.MapPost("/api/payments/webhook", async (
             HttpContext context,
@@ -26,5 +28,11 @@ public static class ConfirmPaymentEndpoint
 
             return Results.Ok();
         });
-    }
+        
+        app.MapPost("/api/payments/create-session", async (CreatePaymentSessionCommand cmd, IMediator mediator) =>
+        {
+            var result = await mediator.Send(cmd);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+    }  
 }

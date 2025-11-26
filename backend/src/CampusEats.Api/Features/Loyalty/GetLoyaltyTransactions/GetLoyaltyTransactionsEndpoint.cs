@@ -9,7 +9,7 @@ public static class GetLoyaltyTransactionsEndpoint
     public static void Map(IEndpointRouteBuilder app)
     {
         app.MapGet("/api/loyalty/transactions", async (
-                [FromServices] IMediator mediator,
+                IMediator mediator,
                 ClaimsPrincipal user) =>
             {
                 var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -19,8 +19,7 @@ public static class GetLoyaltyTransactionsEndpoint
                 var transactions = await mediator.Send(new GetLoyaltyTransactionsQuery(userId));
                 return Results.Ok(transactions);
             })
-            // .RequireAuthorization()
             .WithTags("Loyalty")
-            .WithOpenApi();
+            .RequireAuthorization();
     }
 }

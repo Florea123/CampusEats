@@ -20,8 +20,7 @@ public static class RedeemPointsEndpoint
                 var result = await mediator.Send(new RedeemPointsCommand(userId, request.Points, request.Description));
                 return result.Success ? Results.Ok(result) : Results.BadRequest(result);
             })
-            .RequireAuthorization()
             .WithTags("Loyalty")
-            .WithOpenApi();
+            .RequireAuthorization();
     }
 }
