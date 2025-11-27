@@ -5,9 +5,10 @@ import { Plus } from 'lucide-react'
 
 type Props = {
     onAddToCart: (item: MenuItem) => void
+    isLoggedIn?: boolean
 }
 
-export default function MenuPage({ onAddToCart }: Props) {
+export default function MenuPage({ onAddToCart, isLoggedIn }: Props) {
     const [items, setItems] = useState<MenuItem[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -62,13 +63,15 @@ export default function MenuPage({ onAddToCart }: Props) {
                             </div>
                         )}
 
-                        <button 
-                            onClick={() => onAddToCart(item)}
-                            className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-brand-600 active:bg-brand-700 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-gray-200 hover:shadow-brand-500/30"
-                        >
-                            <Plus size={18} />
-                            Adaugă în coș
-                        </button>
+                        {isLoggedIn && (
+                            <button
+                                onClick={() => onAddToCart(item)}
+                                className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-brand-600 active:bg-brand-700 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-gray-200 hover:shadow-brand-500/30"
+                            >
+                                <Plus size={18} />
+                                Adaugă în coș
+                            </button>
+                        )}
                     </div>
                 </div>
             ))}

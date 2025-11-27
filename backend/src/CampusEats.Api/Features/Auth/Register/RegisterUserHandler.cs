@@ -11,9 +11,9 @@ public class RegisterUserHandler(
     IPasswordService passwords,
     IJwtTokenService jwt,
     IHttpContextAccessor http
-) : IRequestHandler<RegisterUserCommand, AuthResultDto>
+) : IRequestHandler<RegisterUserCommand, IResult>
 {
-    public async Task<AuthResultDto> Handle(RegisterUserCommand request, CancellationToken ct)
+    public async Task<IResult> Handle(RegisterUserCommand request, CancellationToken ct)
     {
         var user = new User
         {
@@ -34,7 +34,7 @@ public class RegisterUserHandler(
 
         db.LoyaltyAccounts.Add(loyaltyAccount);
         
-        var (rt, rtHash, expiresAt) = jwt.GenerateRefreshToken(days: 7);
+        var (rt, rtHash, expiresAt) = jwt.GenerateRefreshToken();
         db.RefreshTokens.Add(new RefreshToken
         {
             UserId = user.Id,
@@ -58,6 +58,6 @@ public class RegisterUserHandler(
             });
 
         var access = jwt.GenerateAccessToken(user);
-        return new AuthResultDto(access);
+        return Results.Ok(new AuthResultDto(access));
     }
 }

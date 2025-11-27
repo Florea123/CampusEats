@@ -10,7 +10,7 @@ namespace CampusEats.Api.Infrastructure.Auth;
 public interface IJwtTokenService
 {
     string GenerateAccessToken(User user);
-    (string token, string hash, DateTime expiresAtUtc) GenerateRefreshToken(int days);
+    (string token, string hash, DateTime expiresAtUtc) GenerateRefreshToken();
     string Hash(string value);
 }
 
@@ -42,12 +42,12 @@ public class JwtTokenService(JwtOptions options) : IJwtTokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public (string token, string hash, DateTime expiresAtUtc) GenerateRefreshToken(int days)
+    public (string token, string hash, DateTime expiresAtUtc) GenerateRefreshToken()
     {
         var bytes = RandomNumberGenerator.GetBytes(64);
         var token = Convert.ToBase64String(bytes);
         var hash = Hash(token);
-        return (token, hash, DateTime.UtcNow.AddDays(days));
+        return (token, hash, DateTime.UtcNow.AddDays(options.RefreshTokenDays));
     }
 
     public string Hash(string value)

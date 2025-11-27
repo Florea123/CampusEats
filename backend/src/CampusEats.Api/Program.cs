@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text;
 using CampusEats.Api.Data;
+using CampusEats.Api.Features.Auth;
 using CampusEats.Api.Features.Auth.Login;
 using CampusEats.Api.Features.Auth.Logout;
 using CampusEats.Api.Features.Auth.Refresh;
@@ -33,6 +34,8 @@ using Stripe;
 using CampusEats.Api.Features.Loyalty.GetLoyaltyAccount;
 using CampusEats.Api.Features.Loyalty.GetLoyaltyTransactions;
 using CampusEats.Api.Features.Loyalty.RedeemPoints;
+using CampusEats.Api.Features.Menu;
+using CampusEats.Api.Features.Payments;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = "Host=localhost;Port=5432;Database=campuseats;Username=postgres;Password=postgres";
@@ -152,20 +155,10 @@ if (app.Environment.IsDevelopment())
     );
 }
 
-CreateMenuItemEndpoint.Map(app);
-GetAllMenuItemsEndpoint.Map(app);
-GetMenuItemEndpoint.Map(app);
-UpdateMenuItemEndpoint.Map(app);
-DeleteMenuItemEndpoint.Map(app);
-
-RegisterUserEndpoint.Map(app);
-LoginUserEndpoint.Map(app);
-RefreshEndpoint.Map(app);
-LogoutEndpoint.Map(app);
+MenuEndpoints.MapMenu(app);
+AuthEndpoints.MapAuth(app);
 OrdersEndpoint.MapOrders(app);
-
-CreatePaymentSessionEndpoint.Map(app);
-ConfirmPaymentEndpoint.Map(app);
+PaymentsEndpoints.MapPayments(app);
 
 CreateKitchenTaskEndpoint.Map(app);
 GetAllKitchenTasksEndpoint.Map(app);

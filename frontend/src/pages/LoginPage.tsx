@@ -66,7 +66,7 @@ export default function LoginPage({ onLoggedIn }: Props) {
                             />
                         </div>
                     </div>
-
+                    
                     {error && (
                         <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100 flex items-center gap-2 animate-shake">
                             <span className="font-bold">!</span> {error}

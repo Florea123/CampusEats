@@ -34,9 +34,9 @@ function NavLink({ to, icon: Icon, children, active }: any) {
 }
 
 function Layout({ children, role, onLogout }: any) {
-    const { points } = useLoyaltyPoints()
     const location = useLocation()
-
+    const { points: loyaltyPoints } = useLoyaltyPoints(!!role)
+    const points = loyaltyPoints ?? 0
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
             <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-40 shadow-sm">
@@ -76,7 +76,7 @@ function Layout({ children, role, onLogout }: any) {
                                     {/* Link Puncte Loialitate */}
                                     <Link to="/loyalty" className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-full text-amber-700 text-sm font-semibold shadow-sm transition-colors cursor-pointer" title="Vezi Detalii Puncte">
                                         <Gift size={14} />
-                                        <span>{points ?? 0} pct</span>
+                                        <span>{points}</span>
                                     </Link>
 
                                     <div className="h-6 w-px bg-gray-300 mx-1"></div>
@@ -110,15 +110,35 @@ function Layout({ children, role, onLogout }: any) {
 }
 
 export default function App() {
-    const [token, setToken] = useState<string | null>(AuthApi.getToken())
+    const [token, setToken] = useState<string | null>(() => AuthApi.getToken())
     const [role, setRole] = useState<string | null>(null)
     const [cart, setCart] = useState<CartItem[]>([])
+    const [isRefreshing, setIsRefreshing] = useState(true)
+
+    useEffect(() => {
+        const performRefresh = async () => {
+            try {
+                await AuthApi.refresh()
+                setToken(AuthApi.getToken())
+            } catch (error) {
+                console.error('Token refresh failed:', error)
+                await AuthApi.logout()
+                setToken(null)
+            }
+        }
+
+        performRefresh().finally(() => setIsRefreshing(false))
+
+        const interval = setInterval(performRefresh, 14 * 60 * 1000)
+
+        return () => clearInterval(interval)
+    }, [])
 
     useEffect(() => {
         if (token) {
             try {
                 const decoded: any = jwtDecode(token)
-                const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role;
+                const userRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role
                 setRole(userRole)
             } catch (e) {
                 setRole(null)
@@ -127,6 +147,14 @@ export default function App() {
             setRole(null)
         }
     }, [token])
+
+    if (isRefreshing) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+            </div>
+        )
+    }
 
     const handleLogout = async () => {
         await AuthApi.logout()
@@ -173,12 +201,12 @@ export default function App() {
                                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Meniu Delicios 🍔</h1>
                                 <p className="text-gray-500 mt-2 text-lg">Comandă mâncarea preferată direct din campus.</p>
                             </div>
-                            <MenuPage onAddToCart={addToCart} />
+                            <MenuPage onAddToCart={addToCart} isLoggedIn={!!token} />
                             {token && (
-                                <OrderCart 
-                                    cart={cart} 
-                                    onClear={() => setCart([])} 
-                                    onUpdateQuantity={updateQuantity} 
+                                <OrderCart
+                                    cart={cart}
+                                    onClear={() => setCart([])}
+                                    onUpdateQuantity={updateQuantity}
                                 />
                             )}
                         </>

@@ -8,12 +8,19 @@ export default function RegisterPage({ onRegistered }: Props) {
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
+
+        if (password !== confirmPassword) {
+            setError('Parolele nu se potrivesc')
+            return
+        }
+        
         setLoading(true)
         try {
             await AuthApi.register({ name, email, password })
@@ -79,6 +86,23 @@ export default function RegisterPage({ onRegistered }: Props) {
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-gray-50 focus:bg-white transition-all"
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmă Parola</label>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-brand-500 transition-colors">
+                                <Lock size={18} />
+                            </div>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={e => setConfirmPassword(e.target.value)}
+                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all outline-none bg-gray-50 focus:bg-white"
                                 placeholder="••••••••"
                                 required
                             />

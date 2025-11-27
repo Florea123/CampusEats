@@ -9,4 +9,4 @@ public record RegisterUserCommand(
     string Email,
     string Password,
     UserRole Role
-) : IRequest<AuthResultDto>;
+) : IRequest<IResult>;

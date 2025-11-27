@@ -34,7 +34,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     return res.json()
 }
 
-export type AuthResult = { accessToken: string }
+export type AuthResult = { accessToken: string; }
 export type RegisterBody = { name: string; email: string; password: string }
 export type LoginBody = { email: string; password: string }
 
