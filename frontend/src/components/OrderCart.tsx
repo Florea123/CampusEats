@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import type { MenuItem } from '../types'
-import { PaymentApi } from '../services/api' 
-import { ShoppingCart, X, Trash2, Minus, Plus, CreditCard } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import type { MenuItem, UserCouponDto } from '../types'
+import { PaymentApi, CouponApi } from '../services/api' 
+import { ShoppingCart, X, Trash2, Minus, Plus, CreditCard, Tag } from 'lucide-react'
 
 type CartItem = { item: MenuItem; quantity: number }
 
@@ -14,18 +14,71 @@ type Props = {
 export default function OrderCart({ cart, onClear, onUpdateQuantity }: Props) {
     const [isOpen, setIsOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [myCoupons, setMyCoupons] = useState<UserCouponDto[]>([])
+    const [selectedCouponId, setSelectedCouponId] = useState<string | null>(null)
+    const [showCoupons, setShowCoupons] = useState(false)
 
-    const total = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0)
+    const subtotal = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0)
     const itemCount = cart.reduce((acc, i) => acc + i.quantity, 0)
+    
+    const selectedCoupon = useMemo(() => {
+        if (!selectedCouponId) return null
+        return myCoupons.find(c => c.id === selectedCouponId)
+    }, [selectedCouponId, myCoupons])
+
+    const discountAmount = useMemo(() => {
+        if (!selectedCoupon) return 0
+        
+        // Check minimum order amount
+        if (selectedCoupon.minimumOrderAmount && subtotal < selectedCoupon.minimumOrderAmount) {
+            return 0
+        }
+
+        switch (selectedCoupon.couponType) {
+            case 0: // PercentageDiscount
+                return subtotal * (selectedCoupon.discountValue / 100)
+            case 1: // FixedAmountDiscount
+                return Math.min(selectedCoupon.discountValue, subtotal)
+            case 2: // FreeItem
+                if (selectedCoupon.specificMenuItemId) {
+                    const item = cart.find(c => c.item.id === selectedCoupon.specificMenuItemId)
+                    return item ? item.item.price : 0
+                }
+                return cart.length > 0 ? cart[0].item.price : 0
+            default:
+                return 0
+        }
+    }, [selectedCoupon, subtotal, cart])
+
+    const total = Math.max(0, subtotal - discountAmount)
+
+    useEffect(() => {
+        if (isOpen) {
+            loadCoupons()
+        }
+    }, [isOpen])
+
+    const loadCoupons = async () => {
+        try {
+            const userCoupons = await CouponApi.getMyCoupons()
+            // Filter out used ones (backend should already do this, but double-check)
+            const availableCoupons = userCoupons.filter(uc => !uc.isUsed)
+            setMyCoupons(availableCoupons)
+        } catch (err) {
+            console.error('Failed to load coupons', err)
+        }
+    }
 
     const handlePlaceOrderDirect = async () => {
         if (cart.length === 0) return
         setLoading(true)
         try {
             const items = cart.map(c => ({ menuItemId: c.item.id, quantity: c.quantity }))
-            const { checkoutUrl } = await PaymentApi.createSession(items, "Plata la livrare (Cash)")
+            const { checkoutUrl } = await PaymentApi.createSession(items, "Plata la livrare (Cash)", selectedCouponId)
             onClear()
             setIsOpen(false)
+            setSelectedCouponId(null)
+            await loadCoupons() // Reload coupons to remove used one
             window.location.href = checkoutUrl
         } catch (err: any) {
             alert('Eroare la plasarea comenzii: ' + err.message)
@@ -111,7 +164,70 @@ export default function OrderCart({ cart, onClear, onUpdateQuantity }: Props) {
 
                 {/* Footer / Total */}
                 <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-                    <div className="flex justify-between items-center mb-5">
+                    {/* Coupon Selection */}
+                    {myCoupons.length > 0 && (
+                        <div className="mb-4">
+                            <button
+                                onClick={() => setShowCoupons(!showCoupons)}
+                                className="w-full flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-green-400 transition-colors"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Tag size={18} className="text-green-600" />
+                                    <span className="font-medium text-gray-700">
+                                        {selectedCouponId ? 'Cupon aplicat' : 'Aplică un cupon'}
+                                    </span>
+                                </div>
+                                <span className="text-xs text-gray-500">{myCoupons.length} disponibile</span>
+                            </button>
+
+                            {showCoupons && (
+                                <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
+                                    <button
+                                        onClick={() => setSelectedCouponId(null)}
+                                        className={`w-full text-left p-2 rounded border ${!selectedCouponId ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
+                                    >
+                                        <span className="text-sm text-gray-600">Fără cupon</span>
+                                    </button>
+                                    {myCoupons.map(coupon => (
+                                        <button
+                                            key={coupon.id}
+                                            onClick={() => {
+                                                setSelectedCouponId(coupon.id)
+                                                setShowCoupons(false)
+                                            }}
+                                            className={`w-full text-left p-2 rounded border ${selectedCouponId === coupon.id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
+                                        >
+                                            <div className="font-medium text-sm text-gray-900">{coupon.couponName}</div>
+                                            <div className="text-xs text-gray-500">{coupon.couponDescription}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Subtotal și Discount */}
+                    <div className="space-y-2 mb-4">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Subtotal</span>
+                            <span className="font-medium text-gray-900">{subtotal.toFixed(2)} RON</span>
+                        </div>
+                        
+                        {discountAmount > 0 && (
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-green-600 font-medium">Discount ({selectedCoupon?.couponName})</span>
+                                <span className="font-medium text-green-600">-{discountAmount.toFixed(2)} RON</span>
+                            </div>
+                        )}
+                        
+                        {selectedCoupon?.minimumOrderAmount && subtotal < selectedCoupon.minimumOrderAmount && (
+                            <div className="text-xs text-red-500 bg-red-50 p-2 rounded">
+                                Comandă minimă: {selectedCoupon.minimumOrderAmount.toFixed(2)} RON
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex justify-between items-center mb-5 pt-3 border-t border-gray-200">
                         <span className="text-gray-500 font-medium">Total de plată</span>
                         <span className="text-3xl font-extrabold text-gray-900 tracking-tight">{total.toFixed(2)} <span className="text-base font-normal text-gray-500">RON</span></span>
                     </div>

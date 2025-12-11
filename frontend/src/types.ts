@@ -102,3 +102,52 @@ export type LoyaltyTransactionDto = {
     relatedOrderId: string | null
     createdAtUtc: string
 }
+
+// --- Coupon Types ---
+
+export enum CouponType {
+    PercentageDiscount = 0,
+    FixedAmountDiscount = 1,
+    FreeItem = 2
+}
+
+export type CouponDto = {
+    id: string
+    name: string
+    description: string
+    type: CouponType
+    discountValue: number
+    pointsCost: number
+    specificMenuItemId: string | null
+    specificMenuItemName: string | null
+    minimumOrderAmount: number | null
+    isActive: boolean
+    expiresAtUtc: string | null
+}
+
+export type UserCouponDto = {
+    id: string
+    couponId: string
+    couponName: string
+    couponDescription: string
+    couponType: CouponType
+    discountValue: number
+    minimumOrderAmount: number | null
+    specificMenuItemId: string | null
+    specificMenuItemName: string | null
+    acquiredAtUtc: string
+    expiresAtUtc: string | null
+    isUsed: boolean
+    usedAtUtc: string | null
+}
+
+export type CreateCouponRequest = {
+    name: string
+    description: string
+    type: CouponType
+    discountValue: number
+    pointsCost: number
+    specificMenuItemId: string | null
+    minimumOrderAmount: number | null
+    expiresAtUtc: string | null
+}

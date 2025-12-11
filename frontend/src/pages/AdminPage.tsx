@@ -2,9 +2,10 @@ import { useState } from 'react'
 import MenuForm from '../components/MenuForm'
 import UserManagement from '../components/UserManagement'
 import UserForm, { type UserFormValues } from '../components/UserForm'
+import { CouponManagement } from '../components/CouponManagement'
 import { AuthApi } from '../services/api'
 
-type AdminAction = 'menu' | 'register' | 'delete'
+type AdminAction = 'menu' | 'register' | 'delete' | 'coupons'
 
 export default function AdminPage() {
     const [selectedAction, setSelectedAction] = useState<AdminAction>('menu')
@@ -44,6 +45,17 @@ export default function AdminPage() {
                 </button>
 
                 <button
+                    onClick={() => setSelectedAction('coupons')}
+                    className={`px-4 py-2 rounded-lg border ${
+                        selectedAction === 'coupons'
+                            ? 'bg-brand-600 text-white border-brand-600'
+                            : 'bg-white text-gray-700 border-gray-300'
+                    }`}
+                >
+                    Manage Coupons
+                </button>
+
+                <button
                     onClick={() => setSelectedAction('register')}
                     className={`px-4 py-2 rounded-lg border ${
                         selectedAction === 'register'
@@ -71,6 +83,12 @@ export default function AdminPage() {
                     <div>
                         <h2 className="text-xl font-semibold mb-4">Add menu item</h2>
                         <MenuForm />
+                    </div>
+                )}
+
+                {selectedAction === 'coupons' && (
+                    <div>
+                        <CouponManagement />
                     </div>
                 )}
 

@@ -71,7 +71,59 @@ public class PlaceOrderHandler : IRequestHandler<PlaceOrderCommand, Guid>
             order.Items.Add(orderItem);
         }
 
-        order.Total = order.Items.Sum(i => i.UnitPrice * i.Quantity);
+        order.Subtotal = order.Items.Sum(i => i.UnitPrice * i.Quantity);
+        order.Total = order.Subtotal;
+
+        // Apply coupon if provided
+        if (request.Order.UserCouponId.HasValue)
+        {
+            var userCoupon = await _db.UserCoupons
+                .Include(uc => uc.Coupon)
+                .ThenInclude(c => c.SpecificMenuItem)
+                .FirstOrDefaultAsync(uc => uc.Id == request.Order.UserCouponId.Value && 
+                                           uc.UserId == userId && 
+                                           !uc.IsUsed &&
+                                           (uc.ExpiresAtUtc == null || uc.ExpiresAtUtc > DateTime.UtcNow), ct);
+
+            if (userCoupon != null && userCoupon.Coupon.IsActive)
+            {
+                var coupon = userCoupon.Coupon;
+                
+                // Check minimum order amount
+                if (coupon.MinimumOrderAmount.HasValue && order.Subtotal < coupon.MinimumOrderAmount.Value)
+                    throw new InvalidOperationException($"Minimum order amount for this coupon is {coupon.MinimumOrderAmount.Value}");
+
+                decimal discountAmount = 0;
+
+                switch (coupon.Type)
+                {
+                    case CampusEats.Api.Enums.CouponType.PercentageDiscount:
+                        discountAmount = order.Subtotal * (coupon.DiscountValue / 100m);
+                        break;
+                    
+                    case CampusEats.Api.Enums.CouponType.FixedAmountDiscount:
+                        discountAmount = Math.Min(coupon.DiscountValue, order.Subtotal);
+                        break;
+                    
+                    case CampusEats.Api.Enums.CouponType.FreeItem:
+                        if (coupon.SpecificMenuItemId.HasValue)
+                        {
+                            var freeItem = order.Items.FirstOrDefault(i => i.MenuItemId == coupon.SpecificMenuItemId.Value);
+                            if (freeItem != null)
+                                discountAmount = freeItem.UnitPrice;
+                        }
+                        break;
+                }
+
+                order.DiscountAmount = discountAmount;
+                order.Total = Math.Max(0, order.Subtotal - discountAmount);
+                order.AppliedCouponId = userCoupon.Id;
+
+                // Mark coupon as used
+                userCoupon.IsUsed = true;
+                userCoupon.UsedAtUtc = DateTime.UtcNow;
+            }
+        }
 
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
         _db.Orders.Add(order);

@@ -102,16 +102,31 @@ export const MenuApi = {
 }
 
 export const PaymentApi = {
-    createSession: (items: Array<{ menuItemId: string; quantity: number }>, notes?: string) =>
+    createSession: (items: Array<{ menuItemId: string; quantity: number }>, notes?: string, userCouponId?: string | null) =>
     request<{ sessionId: string; checkoutUrl: string }>('/api/payments/create-session', {
         method: 'POST',
-        body: JSON.stringify({ items, notes })
+        body: JSON.stringify({ items, notes, userCouponId })
     })
 }
 
 export const LoyaltyApi = {
     getAccount: () => request<LoyaltyAccount>('/api/loyalty/account'),
     getTransactions: () => request<LoyaltyTransactionDto[]>('/api/loyalty/transactions'),
+}
+
+export const CouponApi = {
+    getAvailable: () => request<import('../types').CouponDto[]>('/api/coupons/available'),
+    getMyCoupons: () => request<import('../types').UserCouponDto[]>('/api/coupons/my-coupons'),
+    purchase: (couponId: string) => 
+        request<{ success: boolean; message: string; userCouponId?: string; remainingPoints?: number }>('/api/coupons/purchase', {
+            method: 'POST',
+            body: JSON.stringify({ couponId })
+        }),
+    create: (body: import('../types').CreateCouponRequest) =>
+        request<{ success: boolean; message: string; couponId?: string }>('/api/coupons', {
+            method: 'POST',
+            body: JSON.stringify(body)
+        })
 }
 
 export const OrderApi = {
