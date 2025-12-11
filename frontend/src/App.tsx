@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import { AuthApi } from './services/api'
-import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings, Gift } from 'lucide-react'
+import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings, Gift, Warehouse } from 'lucide-react'
 import type { MenuItem } from './types'
 
 // Pagini
@@ -16,6 +16,7 @@ import OrderCart from './components/OrderCart'
 import PaymentResult from './components/PaymentResult'
 import LoyaltyPage from './pages/LoyaltyPage' // Import pagina nouă
 import { useLoyaltyPoints } from './hooks/useLoyaltyPoints'
+import InventoryPage from "./pages/InventoryPage";
 
 type CartItem = { item: MenuItem; quantity: number }
 
@@ -62,6 +63,10 @@ function Layout({ children, role, onLogout }: any) {
                             
                             {(role === 'WORKER' || role === 'MANAGER') && (
                                 <NavLink to="/kitchen" icon={ChefHat} active={location.pathname === '/kitchen'}>Bucătărie</NavLink>
+                            )}
+
+                            {(role === 'WORKER' || role === 'MANAGER') && (
+                                <NavLink to="/inventory" icon={Warehouse} active={location.pathname === '/inventory'}>Inventar</NavLink>
                             )}
                             
                             {(role === 'MANAGER') && (
@@ -224,6 +229,7 @@ export default function App() {
                     
                     {/* Rute Protejate Staff */}
                     <Route path="/kitchen" element={(role === 'WORKER' || role === 'MANAGER') ? <KitchenDashboard /> : <Navigate to="/" />} />
+                    <Route path="/inventory" element={(role === 'WORKER' || role === 'MANAGER') ? <InventoryPage /> : <Navigate to="/" />} />
                     <Route path="/admin/menu" element={(role === 'MANAGER') ? <MenuForm /> : <Navigate to="/" />} />
                 </Routes>
                 <PaymentResult onSuccess={onPaymentSuccess} />
