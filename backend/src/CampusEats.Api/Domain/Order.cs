@@ -10,7 +10,11 @@ public class Order
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? CancelledAt { get; set; }
     public OrderStatus Status { get; set; }
+    public decimal Subtotal { get; set; }
+    public decimal DiscountAmount { get; set; } = 0;
     public decimal Total { get; set;  }
     public string? Notes { get; set; }
+    public Guid? AppliedCouponId { get; set; }
     public List<OrderItem> Items { get; set; } = new();
+    public UserCoupon? AppliedCoupon { get; set; }
 }

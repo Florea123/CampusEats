@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import { AuthApi } from './services/api'
-import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings, Gift, Warehouse } from 'lucide-react'
+import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings, Gift, Warehouse, Ticket } from 'lucide-react'
 import type { MenuItem } from './types'
 
 // Pagini
@@ -18,7 +18,8 @@ import PaymentResult from './components/PaymentResult'
 import LoyaltyPage from './pages/LoyaltyPage' // Import pagina nouă
 import AdminPage from './pages/AdminPage'
 import { useLoyaltyPoints } from './hooks/useLoyaltyPoints'
-import InventoryPage from "./pages/InventoryPage";
+import InventoryPage from "./pages/InventoryPage"
+import { CouponsPage } from './pages/CouponsPage';
 
 type CartItem = { item: MenuItem; quantity: number }
 
@@ -61,6 +62,10 @@ function Layout({ children, role, onLogout }: any) {
                             
                             {role && (
                                 <NavLink to="/orders" icon={ClipboardList} active={location.pathname === '/orders'}>Comenzi</NavLink>
+                            )}
+
+                            {role === 'STUDENT' && (
+                                <NavLink to="/coupons" icon={Ticket} active={location.pathname === '/coupons'}>Cupoane</NavLink>
                             )}
                             
                             {(role === 'WORKER' || role === 'MANAGER') && (
@@ -251,6 +256,7 @@ export default function App() {
                     
                     {/* Rute Protejate Utilizator */}
                     <Route path="/loyalty" element={token ? <LoyaltyPage /> : <Navigate to="/login" />} />
+                    <Route path="/coupons" element={token ? <CouponsPage /> : <Navigate to="/login" />} />
                     <Route path="/orders" element={token ? <OrdersPage /> : <Navigate to="/login" />} />
                     
                     {/* Rute Protejate Staff */}

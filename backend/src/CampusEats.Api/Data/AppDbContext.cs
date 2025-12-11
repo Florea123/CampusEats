@@ -18,6 +18,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<LoyaltyTransaction> LoyaltyTransactions => Set<LoyaltyTransaction>();
     public DbSet<Ingredient> Ingredients { get; set; }
     public DbSet<StockTransaction> StockTransactions { get; set; }
+    public DbSet<Coupon> Coupons => Set<Coupon>();
+    public DbSet<UserCoupon> UserCoupons => Set<UserCoupon>();
 
     public async Task EnsureSeedManagerAsync(
         string name,
@@ -55,6 +57,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithOne(la => la.User)
             .HasForeignKey<LoyaltyAccount>(la => la.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Order>()
+            .HasOne(o => o.AppliedCoupon)
+            .WithOne(uc => uc.UsedInOrder)
+            .HasForeignKey<Order>(o => o.AppliedCouponId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
     
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
