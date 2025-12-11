@@ -255,11 +255,14 @@ export default function App() {
                     
                     {/* Rute Protejate Staff */}
                     <Route path="/kitchen" element={(role === 'WORKER' || role === 'MANAGER') ? <KitchenDashboard /> : <Navigate to="/" />} />
+<<<<<<< HEAD
 
                     <Route path="/admin" element={ role === 'MANAGER' ? <AdminPage /> : <Navigate to="/login" />}/>
                     <Route path="*" element={<Navigate to="/" />} />
                     <Route path="/kitchen/order/:id" element={(role === 'WORKER' || role === 'MANAGER') ? <KitchenOrderDetails /> : <Navigate to="/" />} />
 
+=======
+>>>>>>> 2f567400f728bf4492bc3105cd5549aade8b6019
                     <Route path="/inventory" element={(role === 'WORKER' || role === 'MANAGER') ? <InventoryPage /> : <Navigate to="/" />} />
                     <Route path="/admin/menu" element={(role === 'MANAGER') ? <MenuForm /> : <Navigate to="/" />} />
 

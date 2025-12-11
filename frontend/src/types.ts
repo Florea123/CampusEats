@@ -78,6 +78,15 @@ export type InventoryItemDto = {
     updatedAt: string
 }
 
+export type InventoryItemDto = {
+    id: string
+    name: string
+    currentStock: number
+    unit: string
+    lowStockThreshold: number
+    updatedAt: string
+}
+
 export type LoyaltyAccount = {
     id: string
     userId: string
