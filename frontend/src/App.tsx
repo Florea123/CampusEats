@@ -246,12 +246,18 @@ export default function App() {
                         </>
                     } />
                     
-                    <Route path="/login" element={!token ? <LoginPage onLoggedIn={() => setToken(AuthApi.getToken())} /> : <Navigate to="/" />} />
+                    <Route path="/login" element={!token ? <LoginPage onLoggedIn={() => {
+                        setToken(AuthApi.getToken());
+                        localStorage.setItem('has_logged_out', '0');
+                    }} /> : <Navigate to="/" />} />
                     <Route path="/register" element={!token ? 
                         <RegisterPage
                         initialRole={0} 
                         showRoleSelector={false}
-                        onRegistered={() => setToken(AuthApi.getToken())}
+                        onRegistered={() => {
+                            setToken(AuthApi.getToken())
+                            localStorage.setItem('has_logged_out', '0')
+                        }}
                         /> : <Navigate to="/" />} />
                     
                     {/* Rute Protejate Utilizator */}

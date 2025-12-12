@@ -9,7 +9,8 @@ export function CouponsPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [purchaseMessage, setPurchaseMessage] = useState<string | null>(null)
-    const { points, refresh: refetchPoints } = useLoyaltyPoints()
+    const { points: loyaltyPoints, refresh: refetchPoints } = useLoyaltyPoints()
+    const points = loyaltyPoints ?? 0
 
     useEffect(() => {
         loadData()
