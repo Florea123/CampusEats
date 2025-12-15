@@ -1,4 +1,5 @@
 using CampusEats.Api.Features.Coupons.CreateCoupon;
+using CampusEats.Api.Features.Coupons.DeleteCoupon;
 using CampusEats.Api.Features.Coupons.GetAvailableCoupons;
 using CampusEats.Api.Features.Coupons.GetUserCoupons;
 using CampusEats.Api.Features.Coupons.PurchaseCoupon;
@@ -13,5 +14,6 @@ public static class CouponEndpoints
         app.MapGetAvailableCoupons();
         app.MapGetUserCoupons();
         app.MapPurchaseCoupon();
+        app.MapDeleteCoupon();
     }
 }

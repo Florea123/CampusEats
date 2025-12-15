@@ -150,6 +150,10 @@ export const CouponApi = {
         request<{ success: boolean; message: string; couponId?: string }>('/api/coupons', {
             method: 'POST',
             body: JSON.stringify(body)
+        }),
+    delete: (couponId: string) =>
+        request<{ success: boolean; message: string }>(`/api/coupons/${couponId}`, {
+            method: 'DELETE'
         })
 }
 

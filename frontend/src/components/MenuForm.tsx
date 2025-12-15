@@ -192,13 +192,14 @@ export default function MenuPage() {
                             <th className="px-4 py-2 text-left font-medium text-gray-600">Name</th>
                             <th className="px-4 py-2 text-left font-medium text-gray-600">Price</th>
                             <th className="px-4 py-2 text-left font-medium text-gray-600">Category</th>
+                            <th className="px-4 py-2 text-left font-medium text-gray-600">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
                         {items.length === 0 && (
                             <tr>
                                 <td
-                                    colSpan={3}
+                                    colSpan={4}
                                     className="px-4 py-4 text-center text-gray-500"
                                 >
                                     No items yet. Create your first menu item above.
@@ -212,6 +213,19 @@ export default function MenuPage() {
                                     {i.price.toFixed(2)} RON
                                 </td>
                                 <td className="px-4 py-2 text-gray-500">{i.category}</td>
+                                <td className="px-4 py-2">
+                                    <button
+                                        onClick={async () => {
+                                            if (confirm(`Remove "${i.name}" from menu?`)) {
+                                                await MenuApi.delete(i.id)
+                                                await load()
+                                            }
+                                        }}
+                                        className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                    >
+                                        Remove
+                                    </button>
+                                </td>
                             </tr>
                         ))}
                         </tbody>

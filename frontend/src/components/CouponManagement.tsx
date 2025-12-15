@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { CouponApi, MenuApi } from '../services/api'
-import { CreateCouponRequest, CouponType, MenuItem } from '../types'
+import { CreateCouponRequest, CouponType, MenuItem, CouponDto } from '../types'
 
 export function CouponManagement() {
     const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+    const [existingCoupons, setExistingCoupons] = useState<CouponDto[]>([])
     const [formData, setFormData] = useState<CreateCouponRequest>({
         name: '',
         description: '',
@@ -19,6 +20,7 @@ export function CouponManagement() {
 
     useEffect(() => {
         loadMenuItems()
+        loadCoupons()
     }, [])
 
     const loadMenuItems = async () => {
@@ -27,6 +29,34 @@ export function CouponManagement() {
             setMenuItems(items)
         } catch (err) {
             console.error('Failed to load menu items', err)
+        }
+    }
+
+    const loadCoupons = async () => {
+        try {
+            const coupons = await CouponApi.getAvailable()
+            setExistingCoupons(coupons)
+        } catch (err) {
+            console.error('Failed to load coupons', err)
+        }
+    }
+
+    const handleDelete = async (couponId: string) => {
+        if (!confirm('Ești sigur că vrei să ștergi acest cupon?')) {
+            return
+        }
+
+        try {
+            const result = await CouponApi.delete(couponId)
+            if (result.success) {
+                loadCoupons() // Reload the list
+            } else {
+                setMessage({ type: 'error', text: result.message })
+                setTimeout(() => setMessage(null), 5000)
+            }
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || 'Eroare la ștergerea cuponului' })
+            setTimeout(() => setMessage(null), 5000)
         }
     }
 
@@ -49,6 +79,7 @@ export function CouponManagement() {
                     minimumOrderAmount: null,
                     expiresAtUtc: null
                 })
+                loadCoupons() // Reload the list
             } else {
                 setMessage({ type: 'error', text: result.message })
             }
@@ -60,15 +91,30 @@ export function CouponManagement() {
         }
     }
 
-    return (
-        <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-6">Creare Cupon Nou</h2>
+    const getCouponTypeLabel = (type: CouponType) => {
+        switch (type) {
+            case CouponType.PercentageDiscount:
+                return 'Reducere Procentuală'
+            case CouponType.FixedAmountDiscount:
+                return 'Reducere Fixă'
+            case CouponType.FreeItem:
+                return 'Produs Gratuit'
+            default:
+                return 'Unknown'
+        }
+    }
 
-            {message && (
-                <div className={`mb-4 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {message.text}
-                </div>
-            )}
+    return (
+        <div className="space-y-6">
+            {/* Form creare cupon nou */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-2xl font-bold mb-6">Creare Cupon Nou</h2>
+
+                {message && (
+                    <div className={`mb-4 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {message.text}
+                    </div>
+                )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -192,6 +238,58 @@ export function CouponManagement() {
                     {loading ? 'Se creează...' : 'Creare Cupon'}
                 </button>
             </form>
+        </div>
+
+            {/* Lista cupoane existente */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-2xl font-bold mb-4">Cupoane Existente</h2>
+                {existingCoupons.length === 0 ? (
+                    <p className="text-gray-500">Nu există cupoane create încă.</p>
+                ) : (
+                    <div className="space-y-3">
+                        {existingCoupons.map(coupon => (
+                            <div key={coupon.id} className="border border-gray-200 rounded-lg p-4 flex justify-between items-start">
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-lg">{coupon.name}</h3>
+                                    <p className="text-gray-600 text-sm mt-1">{coupon.description}</p>
+                                    <div className="flex gap-4 mt-2 text-sm">
+                                        <span className="text-gray-700">
+                                            <strong>Tip:</strong> {getCouponTypeLabel(coupon.type)}
+                                        </span>
+                                        {coupon.discountValue > 0 && (
+                                            <span className="text-gray-700">
+                                                <strong>Valoare:</strong> {coupon.type === CouponType.PercentageDiscount ? `${coupon.discountValue}%` : `${coupon.discountValue} lei`}
+                                            </span>
+                                        )}
+                                        <span className="text-gray-700">
+                                            <strong>Cost:</strong> {coupon.pointsCost} puncte
+                                        </span>
+                                        {coupon.minimumOrderAmount && (
+                                            <span className="text-gray-700">
+                                                <strong>Comandă minimă:</strong> {coupon.minimumOrderAmount} lei
+                                            </span>
+                                        )}
+                                    </div>
+                                    {coupon.expiresAtUtc && (
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            Expiră: {new Date(coupon.expiresAtUtc).toLocaleDateString('ro-RO')}
+                                        </p>
+                                    )}
+                                    <span className={`inline-block mt-2 px-2 py-1 rounded text-xs ${coupon.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                        {coupon.isActive ? 'Activ' : 'Inactiv'}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => handleDelete(coupon.id)}
+                                    className="ml-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                    Șterge
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

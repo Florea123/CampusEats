@@ -15,6 +15,7 @@ public class Order
     public decimal Total { get; set;  }
     public string? Notes { get; set; }
     public Guid? AppliedCouponId { get; set; }
+    public bool LoyaltyPointsAwarded { get; set; } = false;
     public List<OrderItem> Items { get; set; } = new();
     public UserCoupon? AppliedCoupon { get; set; }
 }
