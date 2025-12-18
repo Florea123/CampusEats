@@ -151,3 +151,16 @@ export type CreateCouponRequest = {
     minimumOrderAmount: number | null
     expiresAtUtc: string | null
 }
+
+export type user = {
+    id: string
+    name: string
+    email: string
+    role: UserRole | string
+    profilePictureUrl?: string | null
+    addressCity?: string | null
+    addressStreet?: string | null
+    addressNumber?: string | null
+    addressDetails?: string | null
+
+}
