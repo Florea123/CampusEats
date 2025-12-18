@@ -116,21 +116,13 @@ function Layout({ children, role, onLogout }: any) {
     const points = loyaltyPoints ?? 0
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
+        <div className="min-h-screen flex flex-col bg-gray-50 font-sans overflow-hidden">
             <header className={`
             sticky top-0 z-40 border-b shadow-sm
             ${isMenuOpen ? 'bg-white' : 'bg-white/90 backdrop-blur-md'}
           `}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
-                        <button
-                            className="flex md:hidden items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-gray-700 shadow-sm"
-                            onClick={() => setIsMenuOpen(true)}
-                            aria-label="Open menu"
-                        >
-                            <span className="text-sm font-semibold">Menu</span>
-                        </button>
-                        
                         {/* Logo */}
                         <div className="flex items-center gap-2">
                             <div className="bg-brand-500 p-2 rounded-lg text-white">
@@ -140,6 +132,14 @@ function Layout({ children, role, onLogout }: any) {
                                 CampusEats
                             </Link>
                         </div>
+                        
+                        <button
+                            className="flex md:hidden items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-gray-700 shadow-sm"
+                            onClick={() => setIsMenuOpen(true)}
+                            aria-label="Open menu"
+                        >
+                            <span className="text-sm font-semibold">Menu</span>
+                        </button>
                         
                         {/* Navigare Desktop */}
                         <nav className="hidden md:flex flex-wrap gap-2 md:flex-nowrap">
@@ -167,11 +167,13 @@ function Layout({ children, role, onLogout }: any) {
                         </nav>
 
                         {/* Navigare Mobile */}
-                            <div className={`
-                            fixed left-0 top-0 z-50 md:hidden
-                            bg-white rounded-lg p-2 shadow-sm w-64 h-screen
+                        <div className={`
+                            fixed right-0 top-0 z-50 md:hidden
+                            bg-white rounded-l-lg p-2 shadow-sm w-64 h-screen
                             transform transition-transform duration-200 ease-in-out
-                            ${isMenuOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'}`}>
+                            ${isMenuOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-full pointer-events-none'}
+                          `}
+                        >
                             <div className="flex flex-col gap-2">
                                 <div className="flex items-center justify-between px-3 py-2 text-sm font-semibold border-b border-gray-200">
                                     Navigation
@@ -203,11 +205,29 @@ function Layout({ children, role, onLogout }: any) {
                                     {(role === 'MANAGER') && (
                                         <NavLink to="/admin" icon={Settings} active={location.pathname === '/admin'}>Admin</NavLink>
                                     )}
+                                    {!role && (
+                                        <div className="mt-2 border-t border-gray-200 pt-3 flex flex-col gap-2">
+                                            <Link
+                                                to="/login"
+                                                onClick={() => setIsMenuOpen(false)}
+                                                className="px-3 py-2 rounded-lg text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700"
+                                            >
+                                                Login
+                                            </Link>
+                                            <Link
+                                                to="/register"
+                                                onClick={() => setIsMenuOpen(false)}
+                                                className="px-3 py-2 rounded-lg text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700"
+                                            >
+                                                Sign Up
+                                            </Link>
+                                        </div>
+                                    )}
                                 </nav>
                             </div>
                         </div>
                         {/* Zona Utilizator / Login */}
-                        <div className="flex items-center gap-4">
+                        <div className="hidden md:flex items-center gap-4">
                             {role ? (
                                 <div className="flex items-center gap-3">
                                     {/* Link Puncte Loialitate - doar pentru STUDENT */}
