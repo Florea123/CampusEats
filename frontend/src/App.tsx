@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import { AuthApi } from './services/api'
-import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings, Gift, Warehouse, Ticket } from 'lucide-react'
+import { LogOut, Pizza, ShoppingBag, ClipboardList, ChefHat, Settings, Gift, Warehouse, Ticket, User } from 'lucide-react'
 import type { MenuItem } from './types'
+
 
 // Pagini
 import MenuPage from './pages/MenuPage'
@@ -20,7 +21,7 @@ import AdminPage from './pages/AdminPage'
 import { useLoyaltyPoints } from './hooks/useLoyaltyPoints'
 import InventoryPage from "./pages/InventoryPage"
 import { CouponsPage } from './pages/CouponsPage';
-
+import ProfilePage from "./pages/ProfilePage"
 type CartItem = { item: MenuItem; quantity: number }
 
 // Componenta ajutătoare pentru link-uri de navigare
@@ -216,7 +217,14 @@ function Layout({ children, role, onLogout }: any) {
                                                         </Link>
                                                     </>
                                                 )}
-
+                                                <Link 
+                                                    to="/profile"
+                                                    className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors text-sm font-medium hover:bg-blue-50 px-3 py-1.5 rounded-lg"
+                                                    title="Profilul Meu"
+                                                    >
+                                                        <User size={18} /> 
+                                                        <span className="hidden sm:inline">Profil</span>
+                                                    </Link>
                                                 <button
                                                     onClick={onLogout}
                                                     className="flex items-center gap-2 text-gray-500 hover:text-red-600 transition-colors text-sm font-medium hover:bg-red-50 px-3 py-1.5 rounded-lg"
@@ -442,7 +450,7 @@ export default function App() {
 
                     <Route path="/inventory" element={(role === 'WORKER' || role === 'MANAGER') ? <InventoryPage /> : <Navigate to="/" />} />
                     <Route path="/admin/menu" element={(role === 'MANAGER') ? <MenuForm /> : <Navigate to="/" />} />
-
+                    <Route path="/profile" element={token ? <ProfilePage /> : <Navigate to="/login" />} />
                 </Routes>
                 <PaymentResult onSuccess={onPaymentSuccess} />
             </Layout>
