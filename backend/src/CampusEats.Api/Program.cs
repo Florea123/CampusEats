@@ -146,7 +146,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var hasher = scope.ServiceProvider.GetRequiredService<PasswordHasher<CampusEats.Api.Domain.User>>();
-    await db.Database.EnsureCreatedAsync();
+    //await db.Database.EnsureCreatedAsync();
+    
+    await db.Database.MigrateAsync();
     
     var managerName = builder.Configuration["SeedManager:Name"];
     var managerEmail = builder.Configuration["SeedManager:Email"];
