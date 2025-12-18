@@ -205,7 +205,29 @@ function Layout({ children, role, onLogout }: any) {
                                     {(role === 'MANAGER') && (
                                         <NavLink to="/admin" icon={Settings} active={location.pathname === '/admin'}>Admin</NavLink>
                                     )}
-                                    {!role && (
+                                    {role ?(
+                                            <div className="mt-2 border-t border-gray-200 pt-3 flex flex-col gap-2">
+                                                {/* Link Puncte Loialitate - doar pentru STUDENT */}
+                                                {role === 'STUDENT' && (
+                                                    <>
+                                                        <Link to="/loyalty" className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-full text-amber-700 text-sm font-semibold shadow-sm transition-colors cursor-pointer" title="Vezi Detalii Puncte">
+                                                            <Gift size={14} />
+                                                            <span>{points}</span>
+                                                        </Link>
+                                                    </>
+                                                )}
+
+                                                <button
+                                                    onClick={onLogout}
+                                                    className="flex items-center gap-2 text-gray-500 hover:text-red-600 transition-colors text-sm font-medium hover:bg-red-50 px-3 py-1.5 rounded-lg"
+                                                    title="Deconectare"
+                                                >
+                                                    <LogOut size={18} />
+                                                    Deconectare
+                                                </button>
+                                            </div>
+                                        )
+                                        : (
                                         <div className="mt-2 border-t border-gray-200 pt-3 flex flex-col gap-2">
                                             <Link
                                                 to="/login"
