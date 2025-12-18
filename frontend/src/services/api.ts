@@ -42,6 +42,11 @@ export type UserDto = {
     name: string
     email: string
     role: string
+    profilePictureUrl?: string | null
+    addressCity?: string | null
+    addressStreet?: string | null
+    addressNumber?: string | null
+    addressDetails?: string | null
     createdAtUtc: string
     updatedAtUtc: string
 }
@@ -107,6 +112,17 @@ export const AuthApi = {
         const body = { userId: id }
         const result = await request<void>('/auth/delete', {
             method: 'DELETE',
+            body: JSON.stringify(body),
+        })
+        return result
+    },
+    getMe : async () => {
+        const result = await request<UserDto>('/auth/me')
+        return result
+    },
+    updateProfile: async (body: Partial<{ name: string | null; profilePictureUrl: string | null; addressCity: string | null; addressStreet: string | null; addressNumber: string | null; addressDetails: string | null;}>) => {
+        const result = await request<UserDto>(`/auth/profile`, {
+            method: 'PUT',
             body: JSON.stringify(body),
         })
         return result
