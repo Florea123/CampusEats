@@ -30,59 +30,63 @@ export default function AdminPage() {
 
     return (
         <div className="max-w-5xl mx-auto py-8">
-            <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
+            <h1 className="text-3xl text-center md:text-3xl font-bold mb-6">Admin Panel</h1>
 
-            <div className="flex gap-3 mb-6">
-                <button
-                    onClick={() => setSelectedAction('menu')}
-                    className={`px-4 py-2 rounded-lg border ${
-                        selectedAction === 'menu'
-                            ? 'bg-brand-600 text-white border-brand-600'
-                            : 'bg-white text-gray-700 border-gray-300'
-                    }`}
-                >
-                    Add menu item
-                </button>
+            <div className="mb-6 overflow-x-auto">
+                <div className="flex gap-3 min-w-max">
+                    <button
+                        onClick={() => setSelectedAction('menu')}
+                        className={`shrink-0 px-4 py-2 rounded-lg border ${
+                            selectedAction === 'menu'
+                                ? 'bg-brand-600 text-white border-brand-600'
+                                : 'bg-white text-gray-700 border-gray-300'
+                        }`}
+                    >
+                        Add menu item
+                    </button>
 
-                <button
-                    onClick={() => setSelectedAction('coupons')}
-                    className={`px-4 py-2 rounded-lg border ${
-                        selectedAction === 'coupons'
-                            ? 'bg-brand-600 text-white border-brand-600'
-                            : 'bg-white text-gray-700 border-gray-300'
-                    }`}
-                >
-                    Manage Coupons
-                </button>
+                    <button
+                        onClick={() => setSelectedAction('coupons')}
+                        className={`shrink-0 px-4 py-2 rounded-lg border ${
+                            selectedAction === 'coupons'
+                                ? 'bg-brand-600 text-white border-brand-600'
+                                : 'bg-white text-gray-700 border-gray-300'
+                        }`}
+                    >
+                        Manage Coupons
+                    </button>
 
-                <button
-                    onClick={() => setSelectedAction('register')}
-                    className={`px-4 py-2 rounded-lg border ${
-                        selectedAction === 'register'
-                            ? 'bg-brand-600 text-white border-brand-600'
-                            : 'bg-white text-gray-700 border-gray-300'
-                    }`}
-                >
-                    Register user
-                </button>
+                    <button
+                        onClick={() => setSelectedAction('register')}
+                        className={`shrink-0 px-4 py-2 rounded-lg border ${
+                            selectedAction === 'register'
+                                ? 'bg-brand-600 text-white border-brand-600'
+                                : 'bg-white text-gray-700 border-gray-300'
+                        }`}
+                    >
+                        Register user
+                    </button>
 
-                <button
-                    onClick={() => setSelectedAction('delete')}
-                    className={`px-4 py-2 rounded-lg border ${
-                        selectedAction === 'delete'
-                            ? 'bg-brand-600 text-white border-brand-600'
-                            : 'bg-white text-gray-700 border-gray-300'
-                    }`}
-                >
-                    Delete user
-                </button>
+                    <button
+                        onClick={() => setSelectedAction('delete')}
+                        className={`shrink-0 px-4 py-2 rounded-lg border ${
+                            selectedAction === 'delete'
+                                ? 'bg-brand-600 text-white border-brand-600'
+                                : 'bg-white text-gray-700 border-gray-300'
+                        }`}
+                    >
+                        Delete user
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow p-6">
                 {selectedAction === 'menu' && (
                     <div>
                         <h2 className="text-xl font-semibold mb-4">Add menu item</h2>
-                        <MenuForm />
+                        <div className="overflow-x-auto">
+                            <MenuForm />
+                        </div>
                     </div>
                 )}
 
@@ -109,6 +113,7 @@ export default function AdminPage() {
                         )}
                     </div>
                 )}
+
                 {selectedAction === 'delete' && (
                     <UserManagement />
                 )}

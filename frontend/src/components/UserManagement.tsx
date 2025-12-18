@@ -157,49 +157,51 @@ export default function UserManagement() {
             )}
 
             {/* Users list */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden">
-                <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-4 py-2 text-left font-semibold text-gray-700">Name</th>
-                        <th className="px-4 py-2 text-left font-semibold text-gray-700">Email</th>
-                        <th className="px-4 py-2 text-left font-semibold text-gray-700">Role</th>
-                        <th className="px-4 py-2 text-right font-semibold text-gray-700">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {visibleUsers.length === 0 && (
+            <div className="border border-gray-200 rounded-xl">
+                <div className="overflow-x-auto">
+                    <table className="min-w-[480px] w-full text-sm">
+                        <thead className="bg-gray-50">
                         <tr>
-                            <td colSpan={4} className="px-4 py-4 text-center text-gray-500">
-                                No users found.
-                            </td>
+                            <th className="px-4 py-2 text-left font-semibold text-gray-700">Name</th>
+                            <th className="px-4 py-2 text-left font-semibold text-gray-700">Email</th>
+                            <th className="px-4 py-2 text-left font-semibold text-gray-700">Role</th>
+                            <th className="px-4 py-2 text-right font-semibold text-gray-700">Actions</th>
                         </tr>
-                    )}
+                        </thead>
+                        <tbody>
+                        {visibleUsers.length === 0 && (
+                            <tr>
+                                <td colSpan={4} className="px-4 py-4 text-center text-gray-500">
+                                    No users found.
+                                </td>
+                            </tr>
+                        )}
 
-                    {visibleUsers.map(user => (
-                        <tr key={user.id} className="border-t border-gray-100">
-                            <td className="px-4 py-2">{user.name}</td>
-                            <td className="px-4 py-2 text-gray-600">{user.email}</td>
-                            <td className="px-4 py-2">
+                        {visibleUsers.map(user => (
+                            <tr key={user.id} className="border-t border-gray-100">
+                                <td className="px-4 py-2">{user.name}</td>
+                                <td className="px-4 py-2 text-gray-600">{user.email}</td>
+                                <td className="px-4 py-2">
                                     <span className="inline-flex px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
                                         {roleLabel(user.role)}
                                     </span>
-                            </td>
-                            <td className="px-4 py-2 text-right">
-                                <button
-                                    onClick={() => {
-                                        setDeleteError(null)
-                                        setConfirmId(user.id)
-                                    }}
-                                    className="px-3 py-1.5 text-xs rounded-lg bg-red-600 text-white hover:bg-red-700"
-                                >
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
+                                </td>
+                                <td className="px-4 py-2 text-right">
+                                    <button
+                                        onClick={() => {
+                                            setDeleteError(null)
+                                            setConfirmId(user.id)
+                                        }}
+                                        className="px-3 py-1.5 text-xs rounded-lg bg-red-600 text-white hover:bg-red-700"
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Delete confirm popup */}

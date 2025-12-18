@@ -37,8 +37,8 @@ export default function LoyaltyPage() {
             {/* Card Principal Puncte */}
             <div className="bg-gradient-to-r from-brand-600 to-brand-500 rounded-2xl p-8 text-white shadow-xl mb-10 flex flex-col md:flex-row items-center justify-between relative overflow-hidden">
                 <div className="relative z-10">
-                    <p className="text-brand-100 font-medium mb-1 text-lg">Balanța ta curentă</p>
-                    <h3 className="text-5xl font-extrabold">{points} <span className="text-2xl font-normal opacity-80">puncte</span></h3>
+                    <p className="text-brand-100 text-center font-medium mb-1 text-lg">Balanța ta curentă</p>
+                    <h3 className="text-5xl text-center font-extrabold">{points} <span className="text-2xl font-normal opacity-80">puncte</span></h3>
                     <p className="mt-4 text-sm bg-white/20 backdrop-blur-sm inline-block px-3 py-1 rounded-full">
                         10 RON cheltuiți = 1 punct câștigat
                     </p>

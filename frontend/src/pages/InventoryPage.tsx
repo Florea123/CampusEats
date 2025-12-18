@@ -3,13 +3,12 @@ import { InventoryApi } from '../services/api'
 import { Package, Plus, AlertTriangle, Search, RefreshCw, Edit2, CalendarDays } from 'lucide-react'
 import type { InventoryItemDto } from '../types'
 
-
 export default function InventoryPage() {
     const [ingredients, setIngredients] = useState<InventoryItemDto[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [showAddForm, setShowAddForm] = useState(false)
-    
+
     // Adjust Stock State
     const [adjustingItem, setAdjustingItem] = useState<InventoryItemDto | null>(null)
     const [adjustQty, setAdjustQty] = useState('')
@@ -84,23 +83,29 @@ export default function InventoryPage() {
 
     return (
         <div className="max-w-6xl mx-auto p-6">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                        <Package className="text-brand-600" />
+            <div className=" md: flex justify-between items-center mb-8">
+                <div className="flex-col items-center gap-3">
+                    <h1 className="text-3xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <Package className="size-16 text-brand-600 md:text-brand-600" />
                         Inventar Bucătărie
                     </h1>
-                    <p className="text-gray-500 mt-1">Gestionează stocurile de ingrediente</p>
+                    <p className="py-2 md:text-gray-500 mt-1">Gestionează stocurile de ingrediente</p>
                 </div>
-                <button 
+                <button
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 flex items-center gap-2 transition-colors shadow-md"
+                    className="hidden md:bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 flex items-center gap-2 transition-colors shadow-md"
                 >
                     <Plus size={20} />
                     Adaugă Ingredient
                 </button>
             </div>
-
+            <button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className="flex md:hidden bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 w-full mb-3 items-center gap-2 transition-colors shadow-md"
+            >
+                <Plus size={20} />
+                Adaugă Ingredient
+            </button>
             {/* Add Ingredient Form */}
             {showAddForm && (
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-8 animate-fade-in">
@@ -221,9 +226,9 @@ export default function InventoryPage() {
             <div className="bg-white rounded-t-xl border-b border-gray-200 p-4 flex justify-between items-center">
                 <div className="relative w-full max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input 
-                        type="text" 
-                        placeholder="Caută ingredient..." 
+                    <input
+                        type="text"
+                        placeholder="Caută ingredient..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -234,80 +239,225 @@ export default function InventoryPage() {
                 </button>
             </div>
 
-            {/* Inventory Table */}
-            <div className="bg-white shadow-sm rounded-b-xl overflow-hidden border border-gray-200">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider">
-                            <th className="p-4 font-semibold">Ingredient</th>
-                            <th className="p-4 font-semibold">Stoc Curent</th>
-                            <th className="p-4 font-semibold">Unitate</th>
-                            <th className="p-4 font-semibold">Ultima Actualizare</th>
-                            <th className="p-4 font-semibold">Alertă Stoc</th>
-                            <th className="p-4 font-semibold">Status</th>
-                            <th className="p-4 font-semibold text-right">Acțiuni</th>
+            {/* Mobile: Vertical Inventory Table (ingredients as columns, scroll sideways) */}
+            <div className="bg-white shadow-sm h-full rounded-b-xl overflow-x-auto border border-gray-200 md:hidden">
+                {loading ? (
+                    <div className="p-8 text-center text-gray-500">
+                        Se încarcă stocurile...
+                    </div>
+                ) : filteredIngredients.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                        Nu s-au găsit ingrediente.
+                    </div>
+                ) : (
+                    <table className="min-w-max text-left h-full border-separate border-spacing-3">
+                        <thead>
+                        <tr className="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
+                            {/* Left header column label (vertical table header) */}
+                            <th className="p-2 font-semibold text-left align-bottom">
+                                Detaliu
+                            </th>
+                            {filteredIngredients.map(item => (
+                                <th
+                                    key={item.id}
+                                    className="p-2 font-semibold text-center align-bottom"
+                                >
+                                    <div className="mx-auto text-gray-900 font-medium">
+                                        {item.name}
+                                    </div>
+                                </th>
+                            ))}
                         </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {loading ? (
-                            <tr><td colSpan={7} className="p-8 text-center text-gray-500">Se încarcă stocurile...</td></tr>
-                        ) : filteredIngredients.length === 0 ? (
-                            <tr><td colSpan={7} className="p-8 text-center text-gray-500">Nu s-au găsit ingrediente.</td></tr>
-                        ) : (
-                            filteredIngredients.map(item => {
-                                const isLowStock = item.currentStock <= item.lowStockThreshold;
-                                let statusLabel;
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 text-sm gap-2">
+                        {/* Stoc Curent */}
+                        <tr>
+                            <th className="p-2 font-semibold text-gray-700 text-left bg-white">
+                                Stoc Curent
+                            </th>
+                            {filteredIngredients.map(item => (
+                                <td key={item.id} className="p-2 text-center">
+                                        <span className="font-bold text-base">
+                                            {item.currentStock}
+                                        </span>
+                                </td>
+                            ))}
+                        </tr>
+
+                        {/* Unitate */}
+                        <tr>
+                            <th className="p-2 font-semibold text-gray-700 text-left bg-white">
+                                Unitate
+                            </th>
+                            {filteredIngredients.map(item => (
+                                <td key={item.id} className="p-2 text-center text-gray-600">
+                                    {item.unit}
+                                </td>
+                            ))}
+                        </tr>
+
+                        {/* Ultima Actualizare */}
+                        <tr>
+                            <th className="p-2 font-semibold text-gray-700 text-left bg-white">
+                                Ultima Actualizare
+                            </th>
+                            {filteredIngredients.map(item => (
+                                <td key={item.id} className="p-2 text-center text-gray-500">
+                                    <div className="flex flex-col items-center gap-1">
+                                        <CalendarDays size={14} className="text-gray-400" />
+                                        <span className="text-xs">
+                                                {new Date(item.updatedAt).toLocaleDateString('ro-RO', {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                })}
+                                            </span>
+                                    </div>
+                                </td>
+                            ))}
+                        </tr>
+
+                        {/* Alertă Stoc */}
+                        <tr>
+                            <th className="p-2 font-semibold text-gray-700 text-left bg-white">
+                                Alertă Stoc
+                            </th>
+                            {filteredIngredients.map(item => (
+                                <td key={item.id} className="p-2 text-center text-gray-500 text-xs">
+                                    Sub {item.lowStockThreshold} {item.unit}
+                                </td>
+                            ))}
+                        </tr>
+
+                        {/* Status */}
+                        <tr>
+                            <th className="p-2 font-semibold text-gray-700 text-left bg-white">
+                                Status
+                            </th>
+                            {filteredIngredients.map(item => {
+                                const isLowStock = item.currentStock <= item.lowStockThreshold
+                                let statusLabel
                                 if (isLowStock) {
                                     statusLabel = (
-                                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                                            <AlertTriangle size={12} /> Stoc Critic
-                                        </span>
-                                    );
+                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-red-100 text-red-700">
+                                                <AlertTriangle size={10} /> Stoc Critic
+                                            </span>
+                                    )
                                 } else {
                                     statusLabel = (
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                            În Stoc
-                                        </span>
-                                    );
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
+                                                În Stoc
+                                            </span>
+                                    )
                                 }
                                 return (
-                                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="p-4 font-medium text-gray-900">{item.name}</td>
-                                        <td className="p-4">
-                                            <span className="font-bold text-lg">{item.currentStock}</span>
-                                        </td>
-                                        <td className="p-4">{item.unit}</td>
-                                        <td className="p-4 flex items-center gap-2 text-gray-500">
-                                            <CalendarDays size={16} />
-                                            {new Date(item.updatedAt).toLocaleDateString('ro-RO', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',}
-                                            )}
-                                        </td>
-                                        <td className="p-4 text-gray-500">
-                                            Sub {item.lowStockThreshold} {item.unit}
-                                        </td>
-                                        <td className="p-4">
-                                            {statusLabel}
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <button
-                                                onClick={() => {
-                                                    setAdjustingItem(item)
-                                                    setAdjustQty('')
-                                                    setAdjustReason('')
-                                                }}
-                                                className="p-2 text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-                                                title="Ajustează Stoc"
-                                            >
-                                                <Edit2 size={18} />
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <td key={item.id} className="p-2 text-center">
+                                        {statusLabel}
+                                    </td>
                                 )
-                            })
-                        )}
+                            })}
+                        </tr>
+
+                        {/* Acțiuni */}
+                        <tr>
+                            <th className="p-2 font-semibold text-gray-700 text-left bg-white">
+                                Acțiuni
+                            </th>
+                            {filteredIngredients.map(item => (
+                                <td key={item.id} className="p-2 text-center">
+                                    <button
+                                        onClick={() => {
+                                            setAdjustingItem(item)
+                                            setAdjustQty('')
+                                            setAdjustReason('')
+                                        }}
+                                        className="p-2 text-brand-600 hover:bg-brand-50 rounded-lg transition-colors inline-flex items-center justify-center"
+                                        title="Ajustează Stoc"
+                                    >
+                                        <Edit2 size={16} />
+                                    </button>
+                                </td>
+                            ))}
+                        </tr>
+                        </tbody>
+                    </table>
+                )}
+            </div>
+
+            {/* Desktop: original horizontal Inventory Table (unchanged layout) */}
+            <div className="bg-white shadow-sm rounded-b-xl overflow-hidden border border-gray-200 hidden md:block">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                    <tr className="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider">
+                        <th className="p-4 font-semibold">Ingredient</th>
+                        <th className="p-4 font-semibold">Stoc Curent</th>
+                        <th className="p-4 font-semibold">Unitate</th>
+                        <th className="p-4 font-semibold">Ultima Actualizare</th>
+                        <th className="p-4 font-semibold">Alertă Stoc</th>
+                        <th className="p-4 font-semibold">Status</th>
+                        <th className="p-4 font-semibold text-right">Acțiuni</th>
+                    </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                    {loading ? (
+                        <tr><td colSpan={7} className="p-8 text-center text-gray-500">Se încarcă stocurile...</td></tr>
+                    ) : filteredIngredients.length === 0 ? (
+                        <tr><td colSpan={7} className="p-8 text-center text-gray-500">Nu s-au găsit ingrediente.</td></tr>
+                    ) : (
+                        filteredIngredients.map(item => {
+                            const isLowStock = item.currentStock <= item.lowStockThreshold;
+                            let statusLabel;
+                            if (isLowStock) {
+                                statusLabel = (
+                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                            <AlertTriangle size={12} /> Stoc Critic
+                                        </span>
+                                );
+                            } else {
+                                statusLabel = (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                            În Stoc
+                                        </span>
+                                );
+                            }
+                            return (
+                                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="p-4 font-medium text-gray-900">{item.name}</td>
+                                    <td className="p-4">
+                                        <span className="font-bold text-lg">{item.currentStock}</span>
+                                    </td>
+                                    <td className="p-4">{item.unit}</td>
+                                    <td className="p-4 flex items-center gap-2 text-gray-500">
+                                        <CalendarDays size={16} />
+                                        {new Date(item.updatedAt).toLocaleDateString('ro-RO', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',}
+                                        )}
+                                    </td>
+                                    <td className="p-4 text-gray-500">
+                                        Sub {item.lowStockThreshold} {item.unit}
+                                    </td>
+                                    <td className="p-4">
+                                        {statusLabel}
+                                    </td>
+                                    <td className="p-4 text-right">
+                                        <button
+                                            onClick={() => {
+                                                setAdjustingItem(item)
+                                                setAdjustQty('')
+                                                setAdjustReason('')
+                                            }}
+                                            className="p-2 text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+                                            title="Ajustează Stoc"
+                                        >
+                                            <Edit2 size={18} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            )
+                        })
+                    )}
                     </tbody>
                 </table>
             </div>

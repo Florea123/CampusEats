@@ -185,51 +185,54 @@ export default function MenuPage() {
 
             <div>
                 <h3 className="text-lg font-semibold mb-3">Current menu items</h3>
-                <div className="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-4 py-2 text-left font-medium text-gray-600">Name</th>
-                            <th className="px-4 py-2 text-left font-medium text-gray-600">Price</th>
-                            <th className="px-4 py-2 text-left font-medium text-gray-600">Category</th>
-                            <th className="px-4 py-2 text-left font-medium text-gray-600">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {items.length === 0 && (
+                <div className="bg-white rounded-2xl shadow border border-gray-100">
+                    {/* Make table horizontally scrollable on small screens */}
+                    <div className="overflow-x-auto">
+                        <table className="min-w-[480px] w-full text-sm">
+                            <thead className="bg-gray-50">
                             <tr>
-                                <td
-                                    colSpan={4}
-                                    className="px-4 py-4 text-center text-gray-500"
-                                >
-                                    No items yet. Create your first menu item above.
-                                </td>
+                                <th className="px-4 py-2 text-left font-medium text-gray-600">Name</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-600">Price</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-600">Category</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-600">Actions</th>
                             </tr>
-                        )}
-                        {items.map(i => (
-                            <tr key={i.id} className="border-t border-gray-100">
-                                <td className="px-4 py-2">{i.name}</td>
-                                <td className="px-4 py-2 text-gray-700">
-                                    {i.price.toFixed(2)} RON
-                                </td>
-                                <td className="px-4 py-2 text-gray-500">{i.category}</td>
-                                <td className="px-4 py-2">
-                                    <button
-                                        onClick={async () => {
-                                            if (confirm(`Remove "${i.name}" from menu?`)) {
-                                                await MenuApi.delete(i.id)
-                                                await load()
-                                            }
-                                        }}
-                                        className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                            </thead>
+                            <tbody>
+                            {items.length === 0 && (
+                                <tr>
+                                    <td
+                                        colSpan={4}
+                                        className="px-4 py-4 text-center text-gray-500"
                                     >
-                                        Remove
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                                        No items yet. Create your first menu item above.
+                                    </td>
+                                </tr>
+                            )}
+                            {items.map(i => (
+                                <tr key={i.id} className="border-t border-gray-100">
+                                    <td className="px-4 py-2">{i.name}</td>
+                                    <td className="px-4 py-2 text-gray-700">
+                                        {i.price.toFixed(2)} RON
+                                    </td>
+                                    <td className="px-4 py-2 text-gray-500">{i.category}</td>
+                                    <td className="px-4 py-2">
+                                        <button
+                                            onClick={async () => {
+                                                if (confirm(`Remove "${i.name}" from menu?`)) {
+                                                    await MenuApi.delete(i.id)
+                                                    await load()
+                                                }
+                                            }}
+                                            className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                        >
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
