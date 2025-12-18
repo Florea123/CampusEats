@@ -1,13 +1,14 @@
 ﻿using CampusEats.Api.Data;
 using CampusEats.Api.Domain;
 using CampusEats.Api.Enums;
+using CampusEats.Api.Infrastructure.Loyalty;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace CampusEats.Api.Features.Kitchen.UpdateKitchenTask;
 
-public class UpdateKitchenTaskHandler(AppDbContext db)
+public class UpdateKitchenTaskHandler(AppDbContext db, ILoyaltyService loyaltyService)
     : IRequestHandler<UpdateKitchenTaskCommand, IResult>
 {
     public async Task<IResult> Handle(UpdateKitchenTaskCommand request, CancellationToken ct)
@@ -71,6 +72,13 @@ public class UpdateKitchenTaskHandler(AppDbContext db)
                 {
                     case KitchenTaskStatus.Preparing:
                         parentOrder.Status = OrderStatus.Preparing;
+                        
+                        // Acordăm punctele de loialitate când comanda începe să fie preparată
+                        if (!parentOrder.LoyaltyPointsAwarded)
+                        {
+                            await loyaltyService.AwardPointsForOrder(parentOrder.UserId, parentOrder.Id, parentOrder.Total);
+                            parentOrder.LoyaltyPointsAwarded = true;
+                        }
                         break;
                     case KitchenTaskStatus.Ready:
                     case KitchenTaskStatus.Completed:
