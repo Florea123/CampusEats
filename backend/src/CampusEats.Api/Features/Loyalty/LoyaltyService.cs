@@ -13,7 +13,18 @@ public class LoyaltyService(AppDbContext context) : ILoyaltyService
             .FirstOrDefaultAsync(la => la.UserId == userId);
 
         if (account is null)
-            throw new InvalidOperationException($"Loyalty account not found for user {userId}");
+        {
+            // Create loyalty account automatically if it doesn't exist
+            account = new LoyaltyAccount
+            {
+                UserId = userId,
+                Points = 0,
+                CreatedAtUtc = DateTime.UtcNow,
+                UpdatedAtUtc = DateTime.UtcNow
+            };
+            context.LoyaltyAccounts.Add(account);
+            await context.SaveChangesAsync();
+        }
 
         var pointsToAward = (int)Math.Floor(orderTotal / 10);
         if (pointsToAward <= 0) return;

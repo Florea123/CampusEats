@@ -21,7 +21,7 @@ public class UpdateKitchenTaskHandler(AppDbContext db, ILoyaltyService loyaltySe
             return Results.NotFound($"Kitchen task {request.Id} not found.");
 
         // 2. Verificăm statusul comenzii părinte
-        var parentOrder = await db.Orders.AsNoTracking()
+        var parentOrder = await db.Orders
             .FirstOrDefaultAsync(o => o.Id == kitchenTask.OrderId, ct);
 
         // 3. Parsăm noul status dorit (dacă există în request)
@@ -65,8 +65,7 @@ public class UpdateKitchenTaskHandler(AppDbContext db, ILoyaltyService loyaltySe
             // Sincronizare cu Order (doar dacă nu e anulată - verificat mai sus)
             if (parentOrder != null)
             {
-                // Reatașăm pentru update
-                db.Orders.Attach(parentOrder);
+                // Entitatea Order este deja tracked prin .Include(), nu e nevoie de Attach()
                 
                 switch (newStatus.Value)
                 {
