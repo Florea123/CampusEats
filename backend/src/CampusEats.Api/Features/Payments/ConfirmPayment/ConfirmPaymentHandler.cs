@@ -24,6 +24,7 @@ public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPay
         using var doc = JsonDocument.Parse(request.PayloadJson);
         var root = doc.RootElement;
 
+        // Traverse to find metadata either at root or in data.object (standard Stripe webhook structure)
         JsonElement metadataEl;
         if (root.TryGetProperty("metadata", out metadataEl) == false)
         {
@@ -32,7 +33,7 @@ public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPay
                 && dataEl.TryGetProperty("object", out var objEl)
                 && objEl.TryGetProperty("metadata", out metadataEl))
             {
-              
+                // Found metadata in data.object
             }
             else
             {
@@ -40,10 +41,12 @@ public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPay
             }
         }
 
+        // TryGetProperty is case-sensitive. Use exact keys from Creation logic.
         if (!metadataEl.TryGetProperty("payment_id", out var paymentIdEl) ||
             !metadataEl.TryGetProperty("user_id", out var userIdEl) ||
             !metadataEl.TryGetProperty("order_items", out var orderItemsEl))
         {
+            // If metadata is present but keys are missing, we throw, causing 500 (which is correct behavior for invalid data)
             throw new InvalidDataException("Required metadata keys (payment_id, user_id, order_items) are missing.");
         }
 
@@ -78,8 +81,11 @@ public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPay
             .Where(m => menuItemIds.Contains(m.Id))
             .ToDictionaryAsync(m => m.Id, ct);
 
+        // FIX: Explicitly generate ID to ensure FK assignment works immediately
+        var orderId = Guid.NewGuid();
         var order = new Order
         {
+            Id = orderId,
             UserId = userId,
             Status = OrderStatus.Pending,
             CreatedAt = DateTime.UtcNow
@@ -98,45 +104,38 @@ public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPay
             });
         }
 
-        // Calculate subtotal
         order.Subtotal = order.Items.Sum(i => i.UnitPrice * i.Quantity);
         order.Total = order.Subtotal;
 
-        // Apply coupon if provided
         if (!string.IsNullOrWhiteSpace(userCouponIdRaw) && Guid.TryParse(userCouponIdRaw, out var userCouponId))
         {
             var userCoupon = await db.UserCoupons
                 .Include(uc => uc.Coupon)
                 .ThenInclude(c => c.SpecificMenuItem)
-                .FirstOrDefaultAsync(uc => uc.Id == userCouponId && 
-                                           uc.UserId == userId && 
-                                           !uc.IsUsed &&
-                                           (uc.ExpiresAtUtc == null || uc.ExpiresAtUtc > DateTime.UtcNow), ct);
+                .FirstOrDefaultAsync(uc => uc.Id == userCouponId &&
+                                           uc.UserId == userId &&
+                                           !uc.IsUsed, ct);
 
             if (userCoupon != null && userCoupon.Coupon.IsActive)
             {
                 var coupon = userCoupon.Coupon;
                 decimal discountAmount = 0;
 
-                // Check minimum order amount
                 if (!coupon.MinimumOrderAmount.HasValue || order.Subtotal >= coupon.MinimumOrderAmount.Value)
                 {
                     switch (coupon.Type)
                     {
-                        case CampusEats.Api.Enums.CouponType.PercentageDiscount:
+                        case CouponType.PercentageDiscount:
                             discountAmount = order.Subtotal * (coupon.DiscountValue / 100m);
                             break;
-                        
-                        case CampusEats.Api.Enums.CouponType.FixedAmountDiscount:
+                        case CouponType.FixedAmountDiscount:
                             discountAmount = Math.Min(coupon.DiscountValue, order.Subtotal);
                             break;
-                        
-                        case CampusEats.Api.Enums.CouponType.FreeItem:
+                        case CouponType.FreeItem:
                             if (coupon.SpecificMenuItemId.HasValue)
                             {
                                 var freeItem = order.Items.FirstOrDefault(i => i.MenuItemId == coupon.SpecificMenuItemId.Value);
-                                if (freeItem != null)
-                                    discountAmount = freeItem.UnitPrice;
+                                if (freeItem != null) discountAmount = freeItem.UnitPrice;
                             }
                             break;
                     }
@@ -145,7 +144,6 @@ public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPay
                     order.Total = Math.Max(0, order.Subtotal - discountAmount);
                     order.AppliedCouponId = userCoupon.Id;
 
-                    // Mark coupon as used
                     userCoupon.IsUsed = true;
                     userCoupon.UsedAtUtc = DateTime.UtcNow;
                 }
@@ -162,7 +160,6 @@ public class ConfirmPaymentHandler(AppDbContext db) : IRequestHandler<ConfirmPay
             UpdatedAt = DateTime.UtcNow
         };
         db.KitchenTasks.Add(kitchenTasks);
-
         db.Orders.Add(order);
 
         payment.OrderId = order.Id;

@@ -13,7 +13,7 @@ public class UploadProfilePictureHandler(IWebHostEnvironment env, IHttpContextAc
         Directory.CreateDirectory(uploadsRoot);
         
         var extension = Path.GetExtension(request.FileName);
-        if(string.IsNullOrWhiteSpace(extension)) extension = "jpg";
+        if(string.IsNullOrWhiteSpace(extension)) extension = ".jpg";
         
         var fileName = $"{Guid.NewGuid()}{extension}";
         var filePath = Path.Combine(uploadsRoot, fileName);
@@ -28,5 +28,4 @@ public class UploadProfilePictureHandler(IWebHostEnvironment env, IHttpContextAc
         
         return new UploadProfilePictureResult(url);
     }
-    
 }

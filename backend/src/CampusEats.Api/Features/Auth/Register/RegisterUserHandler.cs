@@ -74,6 +74,10 @@ public class RegisterUserHandler(
                     Expires = expiresAt
                 });
         }
+        else
+        {
+            await db.SaveChangesAsync(ct);
+        }
 
         var access = jwt.GenerateAccessToken(user);
         return Results.Ok(new AuthResultDto(access));

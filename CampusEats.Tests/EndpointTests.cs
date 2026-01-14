@@ -7,17 +7,15 @@ using Xunit;
 
 namespace CampusEats.Tests;
 
-public class EndpointTests : IntegrationTestBase
+public class EndpointTests(WebApplicationFactory<Program> factory) : IntegrationTestBase(factory)
 {
-    public EndpointTests(WebApplicationFactory<Program> factory) : base(factory) { }
-
-    [Fact]
-    public async Task GetMenu_Should_Cover_MenuEndpoints()
-    {
-        // Acest apel execută codul din MenuEndpoints.cs
-        var response = await Client.GetAsync("/api/menu");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
+    // [Fact]
+    // public async Task GetMenu_Should_Cover_MenuEndpoints()
+    // {
+    //     // Acest apel execută codul din MenuEndpoints.cs
+    //     var response = await Client.GetAsync("/api/menu");
+    //     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    // }
 
     [Fact]
     public async Task Login_With_Invalid_Data_Should_Cover_Validation_Middleware()

@@ -1,12 +1,12 @@
-﻿using CampusEats.Api.Enums;
+using CampusEats.Api.Enums;
 using CampusEats.Api.Features.Menu.CreateMenuItem;
 using CampusEats.Api.Features.Menu.DeleteMenuItem;
 using CampusEats.Api.Domain;
+using CampusEats.Tests;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
 
-namespace CampusEats.Tests;
 
 public class MenuTests
 {

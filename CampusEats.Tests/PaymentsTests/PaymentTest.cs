@@ -12,7 +12,7 @@ using System.Text.Json;
 
 namespace CampusEats.Tests;
 
-public class PaymentsTests
+public class PaymentTest
 {
     [Fact]
     public async Task ConfirmPayment_Should_Create_Order_And_Mark_Payment_As_Succeeded()

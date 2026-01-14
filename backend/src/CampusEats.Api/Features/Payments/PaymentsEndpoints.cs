@@ -29,7 +29,7 @@ public static class PaymentsEndpoints
 
                 await mediator.Send(new ConfirmPaymentCommand(
                     stripeEvent.Type,
-                    stripeEvent.Data.RawObject.ToString()
+                    json
                 ));
 
                 return Results.Ok();

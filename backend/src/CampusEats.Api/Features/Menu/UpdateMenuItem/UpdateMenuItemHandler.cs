@@ -9,21 +9,21 @@ public class UpdateMenuItemHandler(AppDbContext db) : IRequestHandler<UpdateMenu
 {
     public async Task<bool> Handle(UpdateMenuItemCommand request, CancellationToken ct)
     {
-        var exists = await db.MenuItems.AnyAsync(x => x.Id == request.Id, ct);
-        if (!exists) return false;
+        var entity = await db.MenuItems.FindAsync([request.Id], ct);
+        if (entity is null) return false;
 
-        var entity = new MenuItem(
-            request.Id,
-            request.Name.Trim(),
-            request.Price,
-            request.Description?.Trim(),
-            request.Category,
-            request.ImageUrl?.Trim(),
-            request.Allergens ?? []
-        );
+        var updated = entity with
+        {
+            Name = request.Name.Trim(),
+            Price = request.Price,
+            Description = request.Description?.Trim(),
+            Category = request.Category,
+            ImageUrl = request.ImageUrl?.Trim(),
+            Allergens = request.Allergens ?? []
+        };
 
-        db.MenuItems.Update(entity);
-        var affected = await db.SaveChangesAsync(ct);
-        return affected > 0;
+        db.Entry(entity).CurrentValues.SetValues(updated);
+        await db.SaveChangesAsync(ct);
+        return true;
     }
 }

@@ -30,4 +30,12 @@
     <ProjectReference Include="..\backend\src\CampusEats.Api\CampusEats.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="CouponsTests\" />
+    <Folder Include="InventoryTests\" />
+    <Folder Include="KitchenTests\" />
+    <Folder Include="LoyaltyTests\" />
+    <Folder Include="OrdersTests\" />
+  </ItemGroup>
+
 </Project>

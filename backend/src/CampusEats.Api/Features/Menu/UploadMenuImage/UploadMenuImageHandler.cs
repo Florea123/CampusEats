@@ -8,6 +8,9 @@ public class UploadMenuImageHandler(IWebHostEnvironment env, IHttpContextAccesso
 {
     public async Task<UploadMenuImageResult> Handle(UploadMenuImageCommand request, CancellationToken cancellationToken)
     {
+        if (request.Length <= 0 || request.FileStream is null)
+            throw new InvalidOperationException("File is empty.");
+        
         var webRoot = env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         var uploadsRoot = Path.Combine(webRoot, "menu-images");
         Directory.CreateDirectory(uploadsRoot);
