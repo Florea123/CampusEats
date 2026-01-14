@@ -10,7 +10,7 @@ using CampusEats.Api.Enums;
 using CampusEats.Tests;
 using Microsoft.EntityFrameworkCore;
 
-public class ReviewsTests
+public class ReviewsTest
 {
     [Fact]
     public async Task AddReview_Should_Create_Review_Successfully()

@@ -8,7 +8,7 @@ using Xunit;
 
 
 
-public class MenuTests
+public class MenuTest
 {
     [Fact]
     public async Task CreateMenuItem_Should_Add_Item_To_Database()

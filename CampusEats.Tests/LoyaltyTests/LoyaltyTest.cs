@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CampusEats.Tests;
 
-public class LoyaltyTests
+public class LoyaltyTest
 {
     [Fact]
     public async Task AwardPointsForOrder_Should_Create_LoyaltyAccount_And_Add_Points()
