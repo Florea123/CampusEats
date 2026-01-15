@@ -17,10 +17,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using NSubstitute;
 using System.Security.Claims;
+using CampusEats.Tests;
 
-namespace CampusEats.Tests;
+namespace CampusEats.Tests.AuthTests;
 
-public class AuthTests
+public class AuthTest
 {
     [Fact]
     public async Task RegisterUser_Should_Create_User_And_LoyaltyAccount()

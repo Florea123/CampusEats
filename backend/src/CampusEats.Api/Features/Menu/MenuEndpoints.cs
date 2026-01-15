@@ -63,9 +63,19 @@ public static class MenuEndpoints
                 if (!request.HasFormContentType)
                     return Results.BadRequest("Content type must be multipart/form-data.");
 
-                var form = await request.ReadFormAsync();
-                var file = form.Files["file"];
+                IFormCollection form;
 
+                try
+                {
+                    form = await request.ReadFormAsync();
+                }
+                catch
+                {
+                    return Results.BadRequest("Invalid form data.");
+                }
+
+                var file = form.Files.FirstOrDefault(f => f.Name == "file");
+                
                 if (file is null || file.Length == 0)
                     return Results.BadRequest("No file uploaded.");
 

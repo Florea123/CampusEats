@@ -7,11 +7,10 @@ using CampusEats.Api.Features.Reviews.GetUserReview;
 using CampusEats.Api.Features.Reviews.GetMenuItemRating;
 using CampusEats.Api.Domain;
 using CampusEats.Api.Enums;
+using CampusEats.Tests;
 using Microsoft.EntityFrameworkCore;
 
-namespace CampusEats.Tests;
-
-public class ReviewsTests
+public class ReviewsTest
 {
     [Fact]
     public async Task AddReview_Should_Create_Review_Successfully()

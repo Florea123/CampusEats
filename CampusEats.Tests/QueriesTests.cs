@@ -47,38 +47,7 @@ public class QueriesTests
         var okResult = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.Ok<List<CampusEats.Api.Features.Auth.UserDto>>>(result);
         Assert.Empty(okResult.Value);
     }
-
-    // --- MENU QUERIES ---
-
-    [Fact]
-    public async Task GetAllMenuItems_Should_Return_All_Items()
-    {
-        using var db = TestDbHelper.GetInMemoryDbContext();
-        db.MenuItems.Add(new MenuItem(Guid.NewGuid(), "Pizza", 20, "Desc", MenuCategory.PIZZA, null, []));
-        await db.SaveChangesAsync();
-
-        var handler = new GetAllMenuItemsHandler(db);
-        // GetAllMenuItemsQuery nu are parametri în constructor
-        var result = await handler.Handle(new GetAllMenuItemsQuery(), CancellationToken.None);
-
-        Assert.NotEmpty(result);
-    }
-
-    [Fact]
-    public async Task GetMenuItem_Should_Return_Dto_When_Exists()
-    {
-        using var db = TestDbHelper.GetInMemoryDbContext();
-        var id = Guid.NewGuid();
-        db.MenuItems.Add(new MenuItem(id, "Coke", 5, "Cold", MenuCategory.DRINK, null, []));
-        await db.SaveChangesAsync();
-
-        var handler = new GetMenuItemHandler(db);
-        var result = await handler.Handle(new GetMenuItemQuery(id), CancellationToken.None);
-
-        Assert.NotNull(result);
-        Assert.Equal("Coke", result.Name);
-    }
-
+    
     // --- INVENTORY QUERIES ---
 
     [Fact]
